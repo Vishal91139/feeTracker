@@ -14,7 +14,6 @@ CREATE TABLE users (
 
 CREATE TABLE students (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  student_code VARCHAR(50) UNIQUE NOT NULL,
   full_name VARCHAR(100) NOT NULL,
   mobile VARCHAR(15),
   email VARCHAR(100),

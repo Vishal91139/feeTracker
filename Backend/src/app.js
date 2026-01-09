@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { pool } from './db/db.js';
 
 const app = express()
 
@@ -17,8 +16,10 @@ app.use(cookieParser())
 
 import adminRouter from './routes/admin.routes.js'
 import academicYearRouter from './routes/academic-year.routes.js'
+import receiptRouter from './routes/receipt.routes.js'
 
 app.use("/admin", adminRouter)
 app.use("/academic-year", academicYearRouter)
+app.use("/receipt", receiptRouter)
 
 export { app }

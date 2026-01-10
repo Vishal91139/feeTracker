@@ -13,7 +13,7 @@ const createStudent = asyncHandler(async(req, res) => {
 
     const [existingStudent] = await pool.query("SELECT * FROM students WHERE full_name = ? AND (email = ? OR mobile = ?)", [name, email, mobile]);
 
-    if(!existingStudent || existingStudent.length===0){
+    if(existingStudent || existingStudent.length > 0){
         throw new ApiError(409, "Student already exists");
     }
 

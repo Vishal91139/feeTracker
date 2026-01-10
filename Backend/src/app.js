@@ -16,10 +16,14 @@ app.use(cookieParser())
 
 import adminRouter from './routes/admin.routes.js'
 import academicYearRouter from './routes/academic-year.routes.js'
-import receiptRouter from './routes/receipt.routes.js'
+import receiptRouter from './routes/receipts.routes.js'
+import studentRouter from './routes/students.routes.js'
+import studentAcademicsRouter from './routes/student-academics.routes.js'
 
 app.use("/admin", adminRouter)
 app.use("/academic-year", academicYearRouter)
 app.use("/receipt", receiptRouter)
+app.use("/student", studentRouter)
+app.use("/student-academics", studentAcademicsRouter)
 
 export { app }

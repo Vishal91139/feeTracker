@@ -1,24 +1,18 @@
 import { Router } from 'express';
-import { createReceipt, getReceipt, getAllReceipts, updateReceipt, deleteReceipt, searchReceipt } from '../controllers/receipts.controller';
+import { createReceipt,
+    getReceiptById,
+    getAllReceipts,
+    updateReceipt, 
+    deleteReceipt,
+    searchReceipt } from '../controllers/receipts.controller.js';
 
 const router = Router();
 
-// Create a new receipt
-router.route('/receipts').post(createReceipt);
-
-// Retrieve all receipts
+router.route('/create').post(createReceipt);
+router.route('/:id').get(getReceiptById);
 router.route('/receipts').get(getAllReceipts);
-
-// Retrieve a single receipt with id
-router.route('/receipts/:id').get(getReceipt);
-
-// Update a receipt with id
-router.route('/receipts/:id').put(updateReceipt);
-
-// Delete a receipt with id
-router.route('/receipts/:id').delete(deleteReceipt);
-
-// search a reciept with ReceiptNo
-router.route('/receipts/search/').get(searchReceipt);
+router.route('/:id').patch(updateReceipt);
+router.route('/:id').delete(deleteReceipt);
+router.route('/search').get(searchReceipt);
 
 export default router;

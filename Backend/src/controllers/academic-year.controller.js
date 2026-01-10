@@ -18,7 +18,7 @@ const addAcademicYear = asyncHandler(async(req, res) => {
         )
 });
 
-const getAcademicYears = asyncHandler(async(req, res) => {
+const getAllAcademicYears = asyncHandler(async(req, res) => {
     const [row] = await pool.query(`Select * from academic_years`,);
 
     return res.status(200)
@@ -27,4 +27,23 @@ const getAcademicYears = asyncHandler(async(req, res) => {
         )
 });
 
-export { addAcademicYear, getAcademicYears };
+const deleteAcademicYearById = asyncHandler(async(req, res) => {
+    const { id } = req.params;
+
+    if(!id) {
+        throw new ApiError(400, "Academic year id is required");
+    }
+
+    const [row] = await pool.query(`Delete from academic_years where id = ?`, [id]);
+
+    return res.status(200)
+        .json(
+            new ApiResponse(200, row, "Academic year deleted successfully")
+        )
+});
+
+export { 
+    addAcademicYear,
+    getAllAcademicYears,
+    deleteAcademicYearById 
+};

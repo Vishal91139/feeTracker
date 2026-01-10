@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { enrollStudentToAcademic, studentsOfAcademicYear } from "../controllers/student-academics.controller.js";
+import { enrollStudentToNewAcademic,
+    getStudentAcademicYears } from "../controllers/student-academics.controller.js";
 
 const router = Router();
 
-router.post("/:yearId/enroll", enrollStudentToAcademic);
-router.get("/students/:yearId/", studentsOfAcademicYear);
+router.post("/enroll", enrollStudentToNewAcademic);
+router.get("/student/:studentId", getStudentAcademicYears);
 
 export default router;

@@ -3,37 +3,59 @@ import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 
+// create a new student and enroll them in the current academic year
 const createStudent = asyncHandler(async(req, res) => {
-    const { name, email, mobile, parentName } = req.body;
+    const { name, email, mobile, parentName, class:studentClass, totalFees } = req.body;
 
-    if(!name || !email || !mobile || !parentName){
+    if(!name || !email || !mobile || !parentName || !studentClass || !totalFees){
         throw new ApiError(400, "All fields are required");
     }
 
-    const [row] = await pool.query("SELECT * FROM students WHERE full_name = ? AND (email = ? OR mobile = ?)", [name, email, mobile]);
+    const [existingStudent] = await pool.query("SELECT * FROM students WHERE full_name = ? AND (email = ? OR mobile = ?)", [name, email, mobile]);
 
-    if(!row || row.length===0){
+    if(!existingStudent || existingStudent.length===0){
         throw new ApiError(409, "Student already exists");
     }
 
-    const [result] = await pool.query("INSERT INTO students (full_name, email, mobile, parent_name) VALUES (?, ?, ?, ?)", [name, email, mobile, parentName]);
+    const [student] = await pool.query("INSERT INTO students (full_name, email, mobile, parent_name) VALUES (?, ?, ?, ?)", [name, email, mobile, parentName]);
 
-     return res.status(201)
+    const [currentYear] = await pool.query("SELECT * FROM academic_years WHERE is_current = 1");
+
+    if(!currentYear || currentYear.length===0){
+        throw new ApiError(404, "Current academic year not found");
+    }
+
+    const [enrolledStudent] = await pool.query("INSERT INTO student_academics (student_id, academic_year_id, class, total_fee) VALUES (?, ?, ?, ?)", [student.insertId, currentYear[0].id, studentClass, totalFees]);
+
+    return res.status(201)
         .json(
-            new ApiResponse(201, result[0], "Student created successfully")
+            new ApiResponse(201, enrolledStudent[0], "Student enrolled successfully")
         )
 })
 
+// get all students of a class in a particular year
 const getAllStudents = asyncHandler(async(req, res) => {
-    const [rows] = await pool.query("SELECT * FROM students");
+    const { class:studentClass, year } = req.query;
 
-    if(!rows || rows.length===0){
+    if(!studentClass || !year){
+        throw new ApiError(400, "Class and year are required");
+    }
+
+    const [academicYear] = await pool.query("SELECT * FROM academic_years WHERE year_name = ?", [year]);
+
+    if(!academicYear || academicYear.length===0){
+        throw new ApiError(404, "Academic year not found");
+    }
+
+    const [students] = await pool.query("SELECT s.id As studentId, s.full_name, sa.class, ay.year_name, sa.due_amount FROM students s JOIN student_academics sa ON s.id = sa.student_id JOIN academic_years ay on ay.id = sa.academic_year_id WHERE sa.class = ? AND ay.id = ?", [studentClass, academicYear[0].id]);
+    
+    if(!students || students.length===0){
         throw new ApiError(404, "No students found");
     }
 
     return res.status(200)
         .json(
-            new ApiResponse(200, rows, "Students fetched successfully")
+            new ApiResponse(200, students, "Students fetched successfully")
         )
 })
 
@@ -67,17 +89,17 @@ const updateStudent = asyncHandler(async(req, res) => {
         throw new ApiError(400, "All fields are required");
     }
 
-    const [row] = await pool.query("SELECT * FROM students WHERE id = ?", [studentId]);
+    const [student] = await pool.query("SELECT * FROM students WHERE id = ?", [studentId]);
 
-    if(!row || row.length===0){
+    if(!student || student.length===0){
         throw new ApiError(404, "Student not found");
     }
 
-    const [result] = await pool.query("UPDATE students SET full_name = ?, email = ?, mobile = ?, parent_name = ? WHERE id = ?", [name, email, mobile, parentName, studentId]);
+    const [updatedDetails] = await pool.query("UPDATE students SET full_name = ?, email = ?, mobile = ?, parent_name = ? WHERE id = ?", [name, email, mobile, parentName, studentId]);
 
     return res.status(200)
         .json(
-            new ApiResponse(200, result[0], "Student updated successfully")
+            new ApiResponse(200, updatedDetails[0], "Student updated successfully")
         )
 })
 
@@ -88,9 +110,9 @@ const deleteStudent = asyncHandler(async(req, res) => {
         throw new ApiError(400, "Student id is required");
     }
 
-    const [row] = await pool.query("SELECT * FROM students WHERE id = ?", [studentId]);
+    const [student] = await pool.query("SELECT * FROM students WHERE id = ?", [studentId]);
 
-    if(!row || row.length===0){
+    if(!student || student.length===0){
         throw new ApiError(404, "Student not found");
     }
 
@@ -102,22 +124,23 @@ const deleteStudent = asyncHandler(async(req, res) => {
         )
 })
 
+// search students by name, class and year
 const searchStudent = asyncHandler(async(req, res) => {
-    const { query } = req.query;
+    const { name:query, class:studentClass, year } = req.query;
 
-    if(!query){
-        throw new ApiError(400, "Query is required");
+    if(!query || !studentClass || !year){
+        throw new ApiError(400, "Name is required");
     }
 
-    const [rows] = await pool.query("SELECT * FROM students WHERE full_name LIKE ?", [`%${query}%`]);
+    const [student] = await pool.query("SELECT s.id as studentId, s.full_name, sa.class, ay.year_name, sa.due_amount FROM students s JOIN student_academics sa ON s.id = sa.student_id JOIN academic_years ay ON ay.id = sa.academic_year_id WHERE s.full_name LIKE ? AND sa.class = ? AND ay.year_name = ?", [`%${query}%`, studentClass, year]);
 
-    if(!rows || rows.length===0){
+    if(!student || student.length===0){
         throw new ApiError(404, "No students found");
     }
 
     return res.status(200)
         .json(
-            new ApiResponse(200, rows, "Students fetched successfully")
+            new ApiResponse(200, student, "Students fetched successfully")
         )
 })
 

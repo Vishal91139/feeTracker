@@ -39,10 +39,10 @@ const getReceiptById = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Receipt id is required");
     }
 
-    const [receipt] = await pool.query("SELECT r.receipt_number, s.full_name, sa.class, ay.year_name, r.amount, r.payment_mode, r.payment_date, r.remarks FROM students s JOIN student_academic sa ON s.id = sa.student_id JOIN academic_years ay ON sa.academic_year_id = ay.id JOIN receipts r ON sa.id = r.student_academic_id WHERE id = ?", [receiptId]);
+    const [receipt] = await pool.query("SELECT r.receipt_number, s.full_name, sa.class, ay.year_name, r.amount, r.payment_mode, r.payment_date, r.remarks FROM students s JOIN student_academics sa ON s.id = sa.student_id JOIN academic_years ay ON sa.academic_year_id = ay.id JOIN receipts r ON sa.id = r.student_academic_id WHERE r.id = ?", [receiptId]);
 
     if(!receipt || receipt.length === 0){
-        throw new ApiError(404, "Receipt not found");
+        throw new ApiError(404, "Receipt not found by id");
     }
 
     return res.status(200)
@@ -52,7 +52,7 @@ const getReceiptById = asyncHandler(async (req, res) => {
 });
 
 const getAllReceipts = asyncHandler(async (req, res) => {
-    const [receipts] = await pool.query("SELECT * FROM receipts");
+    const [receipts] = await pool.query("SELECT r.receipt_number, s.full_name, sa.class, ay.year_name, r.amount, r.payment_mode, r.payment_date FROM receipts r JOIN student_academics sa ON r.student_academic_id = sa.id JOIN students s ON sa.student_id = s.id JOIN academic_years ay ON sa.academic_year_id = ay.id");
 
     if(!receipts || receipts.length === 0){
         throw new ApiError(404, "Receipts not found");

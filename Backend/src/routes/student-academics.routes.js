@@ -4,7 +4,7 @@ import { enrollStudentToNewAcademic,
 
 const router = Router();
 
-router.post("/enroll", enrollStudentToNewAcademic);
-router.get("/student/:studentId", getStudentAcademicYears);
+router.route("/enroll").post(enrollStudentToNewAcademic);
+router.route("/student/:studentId").get(getStudentAcademicYears);
 
 export default router;

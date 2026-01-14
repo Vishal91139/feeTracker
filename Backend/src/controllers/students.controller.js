@@ -1,7 +1,7 @@
-import { pool } from "../db/db";
-import { ApiError } from "../utils/ApiError";
-import { ApiResponse } from "../utils/ApiResponse";
-import { asyncHandler } from "../utils/asyncHandler";
+import { pool } from "../db/db.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 // create a new student and enroll them in the current academic year
 const createStudent = asyncHandler(async(req, res) => {
@@ -132,7 +132,13 @@ const searchStudent = asyncHandler(async(req, res) => {
         throw new ApiError(400, "Name is required");
     }
 
-    const [student] = await pool.query("SELECT s.id as studentId, s.full_name, sa.class, ay.year_name, sa.due_amount FROM students s JOIN student_academics sa ON s.id = sa.student_id JOIN academic_years ay ON ay.id = sa.academic_year_id WHERE s.full_name LIKE ? AND sa.class = ? AND ay.year_name = ?", [`%${query}%`, studentClass, year]);
+    const [yearId] = await pool.query("SELECT * FROM academic_years WHERE year_name = ?", [year]);
+
+    if(!yearId || yearId.length===0){
+        throw new ApiError(404, "Academic year not found");
+    }
+
+    const [student] = await pool.query("SELECT s.id as studentId, s.full_name, sa.class, ay.year_name, sa.due_amount FROM students s JOIN student_academics sa ON s.id = sa.student_id JOIN academic_years ay ON ay.id = sa.academic_year_id WHERE s.full_name LIKE ? AND sa.class = ? AND ay.id = ?", [`%${query}%`, studentClass, yearId[0].id]);
 
     if(!student || student.length===0){
         throw new ApiError(404, "No students found");

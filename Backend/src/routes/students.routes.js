@@ -10,7 +10,7 @@ const router = Router();
 
 router.route("/create").post(createStudent);
 router.route("/get").get(getAllStudents);
-router.route("/:id").get(getStudentById).patch(updateStudent).delete(deleteStudent);
-router.route("/search").get(searchStudent);
+router.route("/").get(searchStudent);
+router.route("/:studentId").get(getStudentById).patch(updateStudent).delete(deleteStudent);
 
 export default router;

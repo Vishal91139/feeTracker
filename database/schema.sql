@@ -24,7 +24,8 @@ CREATE TABLE students (
 
 CREATE TABLE academic_years (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  year_name VARCHAR(20) UNIQUE NOT NULL
+  year_name VARCHAR(20) UNIQUE NOT NULL,
+  is_current BOOLEAN DEFAULT FALSE
 );
 
 

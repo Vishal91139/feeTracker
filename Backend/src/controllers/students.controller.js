@@ -47,7 +47,7 @@ const getAllStudents = asyncHandler(async(req, res) => {
         throw new ApiError(404, "Academic year not found");
     }
 
-    const [students] = await pool.query("SELECT s.id As studentId, s.full_name, sa.class, ay.year_name, sa.due_amount FROM students s JOIN student_academics sa ON s.id = sa.student_id JOIN academic_years ay on ay.id = sa.academic_year_id WHERE sa.class = ? AND ay.id = ?", [studentClass, academicYear[0].id]);
+    const [students] = await pool.query("SELECT s.id As studentId, s.full_name, sa.class, s.parent_name, ay.year_name, sa.due_amount FROM students s JOIN student_academics sa ON s.id = sa.student_id JOIN academic_years ay on ay.id = sa.academic_year_id WHERE sa.class = ? AND ay.id = ?", [studentClass, academicYear[0].id]);
     
     if(!students || students.length===0){
         throw new ApiError(404, "No students found");

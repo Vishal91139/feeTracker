@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useState } from 'react'
 
 function Students() {
+  const [academicYear, setAcademicYear] = useState([])
   const [year, setYear] = useState("")
   const [studentClass, setStudentClass] = useState("")
   const [name, setName] = useState("")
@@ -29,14 +30,30 @@ function Students() {
     }
   }
 
+  useEffect(() => {
+    const fetchAcademicYear = async() => {
+      try{
+        const res = await fetch("http://localhost:8000/academic-year/get")
+        const data = await res.json();
+        if(!res.ok) {
+          setAcademicYear([]);
+          return
+        }
+        setAcademicYear(Array.isArray(data.data) ? data.data : []);
+      } catch(e) {
+        setAcademicYear([]);
+      }
+    }
+    fetchAcademicYear();
+  }, [])
+
   return (
     <>
     <div className="min-h-screen bg-gray-900">
       <div className="max-w-5xl mx-auto p-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="px-6 pt-6">
-            <h2 className="text-xl font-semibold text-gray-900 text-center">Student List</h2>
-            <p className="text-sm text-gray-500 mt-1 text-center">Filter by year and class</p>
+            <h2 className="text-xl font-semibold text-gray-900 text-center m-10">Student List</h2>
           </div>
 
           <div className="px-6 py-4">
@@ -47,8 +64,9 @@ function Students() {
                 className="bg-gray-100 text-gray-900 border-0 rounded-md p-2 focus:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150"
               >
                 <option value="">Academic Year</option>
-                <option value="2024-2025">2024-2025</option>
-                <option value="2023-2024">2023-2024</option>
+                { academicYear.length > 0 && academicYear.map((item, idx) => (
+                  <option key={idx} value={item.year_name}>{item.year_name}</option>
+                ))}
               </select>
               <select
                 value={studentClass}

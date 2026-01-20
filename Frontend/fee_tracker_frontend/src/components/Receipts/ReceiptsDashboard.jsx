@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react'
+import { Outlet, useNavigate } from 'react-router-dom'
 
-function Receipts() {
+function ReceiptsDashboard() {
+  const navigate = useNavigate();
+
   const [receipts, setReceipts] = useState([])
   const [academicYears, setAcademicYears] = useState([])
   const [year, setYear] = useState('')
@@ -50,13 +53,13 @@ function Receipts() {
   }, [])
 
   return (
+    <>
     <div className="min-h-screen bg-gray-900">
       <div className="max-w-6xl mx-auto p-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="px-6 pt-6">
             <h2 className="text-xl font-semibold text-gray-900 text-center m-10">Receipts List</h2>
           </div>
-
           <div className="px-6 py-4">
             <div className="flex flex-wrap items-center justify-center gap-4">
               <select
@@ -97,11 +100,18 @@ function Receipts() {
               >
                 Search
               </button>
+              <button
+                onClick={() => navigate("/receipts/create")}
+                className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold py-2 px-4 rounded-md hover:to-blue-600 transition ease-in-out duration-150"
+              >
+                + Create
+              </button>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full table-fixed">
+          <div className="px-6 pb-6">
+            <div className="max-h-[420px] overflow-y-auto overflow-x-auto rounded-lg border border-gray-100">
+              <table className="min-w-full table-fixed">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="w-24 px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-amber-100">S.No</th>
@@ -125,24 +135,27 @@ function Receipts() {
                       <td className="px-4 py-2 text-gray-700">{item.year_name ?? '-'}</td>
                       <td className="px-4 py-2 text-gray-700">{item.amount ?? '-'}</td>
                       <td className="px-4 py-2 text-gray-700">{item.payment_mode ?? '-'}</td>
-                      <td className="px-4 py-2 text-gray-700">{item.payment_date ?? '-'}</td>
+                      <td className="px-4 py-2 text-gray-700">{new Date(item.payment_date).toLocaleDateString("en-IN")}</td>
                     </tr>
                   ))}
 
                 {receipts.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-500">
+                    <td colSpan={8} className="px-4 py-10 text-center text-sm text-gray-500">
                       No receipts found. Adjust filters and try again.
                     </td>
                   </tr>
                 )}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         </div>
       </div>
     </div>
+      <Outlet />
+    </>
   )
 }
 
-export default Receipts
+export default ReceiptsDashboard

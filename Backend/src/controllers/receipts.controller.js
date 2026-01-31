@@ -52,7 +52,7 @@ const getReceiptById = asyncHandler(async (req, res) => {
 });
 
 const getAllReceipts = asyncHandler(async (req, res) => {
-    const [receipts] = await pool.query("SELECT r.receipt_number, s.full_name, sa.class, ay.year_name, r.amount, r.payment_mode, r.payment_date, r.created_at FROM receipts r JOIN student_academics sa ON r.student_academic_id = sa.id JOIN students s ON sa.student_id = s.id JOIN academic_years ay ON sa.academic_year_id = ay.id ORDER BY r.created_at DESC");
+    const [receipts] = await pool.query("SELECT r.id AS receipt_id, r.receipt_number, s.full_name, sa.class, ay.year_name, r.amount, r.payment_mode, r.payment_date, r.created_at FROM receipts r JOIN student_academics sa ON r.student_academic_id = sa.id JOIN students s ON sa.student_id = s.id JOIN academic_years ay ON sa.academic_year_id = ay.id ORDER BY r.created_at DESC");
 
     if(!receipts || receipts.length === 0){
         throw new ApiError(404, "Receipts not found");

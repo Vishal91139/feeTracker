@@ -5,7 +5,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 // create a new student and enroll them in the current academic year
 const createStudent = asyncHandler(async(req, res) => {
-    const { name, email, mobile, parentName, class:studentClass, totalFees } = req.body;
+    const { name, email, mobile, parentName, studentClass, totalFees } = req.body;
 
     if(!name || !email || !mobile || !parentName || !studentClass || !totalFees){
         throw new ApiError(400, "All fields are required");
@@ -13,7 +13,7 @@ const createStudent = asyncHandler(async(req, res) => {
 
     const [existingStudent] = await pool.query("SELECT * FROM students WHERE full_name = ? AND (email = ? OR mobile = ?)", [name, email, mobile]);
 
-    if(existingStudent || existingStudent.length > 0){
+    if(existingStudent.length > 0){
         throw new ApiError(409, "Student already exists");
     }
 

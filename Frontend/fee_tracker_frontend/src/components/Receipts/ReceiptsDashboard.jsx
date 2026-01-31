@@ -114,20 +114,21 @@ function ReceiptsDashboard() {
               <table className="min-w-full table-fixed">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="w-24 px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-amber-100">S.No</th>
+                  <th className="w-16 px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-amber-100">S.No</th>
                   <th className="px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-amber-200">Receipt Number</th>
                   <th className="px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-amber-300">Name</th>
-                  <th className="w-36 px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-amber-400">Class</th>
-                  <th className="w-36 px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-amber-500">Academic Year</th>
-                  <th className="w-36 px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-amber-500">Payment</th>
-                  <th className="px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-amber-500">Payment Mode</th>
-                  <th className="w-40 px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-amber-600">Payment Date</th>
+                  <th className="w-20 px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-amber-400">Class</th>
+                  <th className="w-32 px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-amber-500">Academic Year</th>
+                  <th className="px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-amber-600">Payment</th>
+                  <th className="w-34 px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-amber-700">Payment Mode</th>
+                  <th className="w-32 px-4 py-2 text-center text-sm font-semibold text-gray-700 bg-amber-800">Payment Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 text-center">
                 {receipts.length > 0 &&
                   receipts.map((item, index) => (
-                    <tr key={item.receipt_id ?? item.receipt_number ?? index} className="odd:bg-white even:bg-gray-50">
+                    <tr key={item.receipt_id ?? item.receipt_number ?? index} className="odd:bg-white even:bg-gray-50 hover:bg-gray-200 cursor-pointer"
+                      onClick={() => navigate(`/receipts/${item.receipt_id}`)}>
                       <td className="px-4 py-2 text-gray-900">{index + 1}</td>
                       <td className="px-4 py-2 text-gray-900">{item.receipt_number ?? '-'}</td>
                       <td className="px-4 py-2 text-gray-700">{item.full_name ?? '-'}</td>

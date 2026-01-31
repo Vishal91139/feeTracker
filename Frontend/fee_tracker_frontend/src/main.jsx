@@ -8,6 +8,8 @@ import ReceiptsDashboard from './components/Receipts/ReceiptsDashboard.jsx'
 import Students from './components/Students/Students.jsx'
 import AcademicYear from './components/Academic-year/AcademicYear.jsx'
 import CreateReceipt from './components/Receipts/CreateReceipt.jsx'
+import ViewReceipt from './components/Receipts/ViewReceipt.jsx'
+import CreateStudent from './components/Students/CreateStudent.jsx'
 
 const router = createBrowserRouter([
   {
@@ -24,7 +26,13 @@ const router = createBrowserRouter([
       },
       {
         path: "students",
-        element: <Students />
+        element: <Students />,
+        children: [
+          {
+            path:"create",
+            element: <CreateStudent />
+          },
+        ]
       },
       {
         path: "receipts",
@@ -33,6 +41,10 @@ const router = createBrowserRouter([
           {
             path:"create",
             element: <CreateReceipt />
+          },
+          {
+            path:":receiptId",
+            element: <ViewReceipt />
           }
         ]
       }

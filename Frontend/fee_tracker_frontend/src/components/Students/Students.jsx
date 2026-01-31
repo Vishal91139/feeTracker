@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { useState } from 'react'
+import { Outlet, useNavigate } from 'react-router-dom'
 
 function Students() {
   const [academicYear, setAcademicYear] = useState([])
@@ -7,6 +8,8 @@ function Students() {
   const [studentClass, setStudentClass] = useState("")
   const [name, setName] = useState("")
   const [student, setStudent] = useState([])
+
+  const navigate = useNavigate();
 
   const handleSearch = async () => {
     const params = new URLSearchParams();
@@ -92,6 +95,12 @@ function Students() {
               >
                 Search
               </button>
+              <button
+              onClick={() => navigate("/students/create")}
+                className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold py-2 px-4 rounded-md hover:to-blue-600 transition ease-in-out duration-150"
+              >
+                +Create
+              </button>
             </div>
           </div>
 
@@ -130,6 +139,7 @@ function Students() {
         </div>
       </div>
     </div>
+    <Outlet />
     </>
   )
 }

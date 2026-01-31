@@ -175,7 +175,7 @@ function CreateReceipt() {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-      <div className=" bg-slate-950 py-10">
+      <div className="bg-slate-950 py-10">
         <div className="mx-auto max-w-6xl px-6">
           <button 
               className='px-7 py-4 bg-red-500 rounded-2xl'

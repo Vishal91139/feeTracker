@@ -4,27 +4,58 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const createReceipt = asyncHandler(async (req, res) => {
-    const { studentId, class:studentClass, academicYearId, amount, paymentMode, paymentDate, remarks } = req.body;
+    const { studentId, studentClass, academicYearId, amount, paymentMode, paymentDate, remarks } = req.body;
 
     if(!studentId || !studentClass || !academicYearId || !amount || !paymentMode || !paymentDate){
         throw new ApiError(400, "All fields are required");
     }
 
-    const [studAcademic] = await pool.query("SELECT id FROM student_academics WHERE student_id = ? AND class = ? AND academic_year_id = ?", [studentId, studentClass, academicYearId]);
+    const insertSql = `
+        INSERT INTO receipts
+        (student_academic_id, receipt_number, amount, payment_mode, payment_date, remarks)
+        SELECT
+        sa.id,
+        CONCAT('RCPT-', UUID_SHORT()),
+        ?, ?, ?, ?
+        FROM student_academics sa
+        WHERE sa.student_id = ?
+        AND sa.class = ?
+        AND sa.academic_year_id = ?
+    `;
 
-    if(!studAcademic || studAcademic.length === 0){
-        throw new ApiError(404, "Student not found");
+    const [insertResult] = await pool.query(insertSql, [
+        amount,
+        paymentMode,
+        paymentDate,
+        remarks,
+        studentId,
+        studentClass,
+        academicYearId
+    ]);
+
+    if (insertResult.affectedRows === 0) {
+        throw new ApiError(404, "Student academic record not found");
     }
 
-    const studAcademicId = studAcademic[0].id;
+    const receiptId = insertResult.insertId;
 
-    const [receipt] = await pool.query("INSERT INTO receipts (student_academic_id, amount, payment_mode, payment_date, remarks) VALUES (?, ?, ?, ?, ?)", [studAcademicId, amount, paymentMode, paymentDate, remarks]);
-    const receiptId = receipt.insertId;
-
-    const receiptNo = `RCPT-${receiptId}`;
-    await pool.query("UPDATE receipts SET receipt_number = ? WHERE id = ?", [receiptNo, receiptId]);
-
-    const [receiptDetails] = await pool.query("SELECT r.receipt_number, s.full_name, sa.class, ay.year_name, r.amount, r.payment_mode, r.payment_date, r.remarks FROM students s JOIN student_academics sa ON s.id = sa.student_id JOIN academic_years ay ON sa.academic_year_id = ay.id JOIN receipts r ON sa.id = r.student_academic_id WHERE r.id = ?", [receiptId]);
+    const [receiptDetails] = await pool.query(
+        `SELECT 
+            r.receipt_number,
+            s.full_name,
+            sa.class,
+            ay.year_name,
+            r.amount,
+            r.payment_mode,
+            r.payment_date,
+            r.remarks
+        FROM receipts r
+        JOIN student_academics sa ON r.student_academic_id = sa.id
+        JOIN students s ON s.id = sa.student_id
+        JOIN academic_years ay ON ay.id = sa.academic_year_id
+        WHERE r.id = ?`,
+        [receiptId]
+    );
 
     return res.status(201)
         .json(
@@ -39,10 +70,10 @@ const getReceiptById = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Receipt id is required");
     }
 
-    const [receipt] = await pool.query("SELECT r.receipt_number, s.full_name, sa.class, ay.year_name, r.amount, r.payment_mode, r.payment_date, r.remarks FROM students s JOIN student_academics sa ON s.id = sa.student_id JOIN academic_years ay ON sa.academic_year_id = ay.id JOIN receipts r ON sa.id = r.student_academic_id WHERE r.id = ?", [receiptId]);
+    const [receipt] = await pool.query("SELECT r.receipt_number, s.full_name, sa.class, ay.year_name, r.amount, r.payment_mode, r.payment_date, r.remarks FROM receipts r JOIN student_academics sa ON r.student_academic_id = sa.id JOIN students s ON sa.student_id = s.id JOIN academic_years ay ON sa.academic_year_id = ay.id  WHERE r.id = ?", [receiptId]);
 
     if(!receipt || receipt.length === 0){
-        throw new ApiError(404, "Receipt not found by id");
+        throw new ApiError(404, "Receipt not found");
     }
 
     return res.status(200)
@@ -52,7 +83,9 @@ const getReceiptById = asyncHandler(async (req, res) => {
 });
 
 const getAllReceipts = asyncHandler(async (req, res) => {
-    const [receipts] = await pool.query("SELECT r.id AS receipt_id, r.receipt_number, s.full_name, sa.class, ay.year_name, r.amount, r.payment_mode, r.payment_date, r.created_at FROM receipts r JOIN student_academics sa ON r.student_academic_id = sa.id JOIN students s ON sa.student_id = s.id JOIN academic_years ay ON sa.academic_year_id = ay.id ORDER BY r.created_at DESC");
+    const { yearId } = req.params;
+
+    const [receipts] = await pool.query("SELECT r.id AS receipt_id, r.receipt_number, s.full_name, sa.class, ay.year_name, r.amount, r.payment_mode, r.payment_date FROM receipts r JOIN student_academics sa ON r.student_academic_id = sa.id JOIN students s ON sa.student_id = s.id JOIN academic_years ay ON sa.academic_year_id = ay.id  WHERE ay.id = ? ORDER BY r.created_at DESC",[yearId]);
 
     if(!receipts || receipts.length === 0){
         throw new ApiError(404, "Receipts not found");
@@ -72,21 +105,43 @@ const updateReceipt = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Receipt id is required");
     }
 
-    if(!amount || !paymentMode || !paymentDate){
-        throw new ApiError(400, "All fields are required");
+    if (
+        amount === undefined &&
+        paymentMode === undefined &&
+        paymentDate === undefined &&
+        remarks === undefined
+    ) {
+        throw new ApiError(400, "No fields provided to update");
     }
 
-    const [existingReceipt] = await pool.query("SELECT * FROM receipts WHERE id = ?", [receiptId]);
+    const clean = (v) => (v && v.trim() !== "" ? v : null);
 
-    if(!existingReceipt || existingReceipt.length === 0){
-        throw new ApiError(404, "Receipt not found");
+    const sql = `
+      UPDATE receipts
+      SET
+        amount = COALESCE(?, amount),
+        payment_mode = COALESCE(?, payment_mode),
+        payment_date = COALESCE(?, payment_date),
+        remarks = COALESCE(?, remarks)
+      WHERE id = ?
+    `;
+
+    const values = [
+      clean(amount),
+      clean(paymentMode),
+      clean(paymentDate),
+      clean(remarks),
+      receiptId
+    ];
+
+    const [updatedDetails] = await pool.query(sql, values);
+
+    if (updatedDetails.affectedRows === 0) {
+      throw new ApiError(404, "Receipt not found")
     }
-    
-    const [receipt] = await pool.query("UPDATE receipts SET  amount = ?, payment_mode = ?, payment_date = ?, remarks = ? WHERE id = ?", [amount, paymentMode, paymentDate, remarks, receiptId]);
-
     return res.status(200)
         .json(
-            new ApiResponse(200, receipt, "Receipt updated successfully")
+            new ApiResponse(200,"", "Receipt updated successfully")
         )
 });  
 
@@ -97,13 +152,11 @@ const deleteReceipt = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Receipt id is required");
     }
 
-    const [existingReceipt] = await pool.query("SELECT * FROM receipts WHERE id = ?", [receiptId]);
+    const [receipt] = await pool.query("DELETE FROM receipts WHERE id = ?", [receiptId]);
 
-    if(!existingReceipt || existingReceipt.length === 0){
+    if (receipt.affectedRows === 0) {
         throw new ApiError(404, "Receipt not found");
     }
-
-    const [receipt] = await pool.query("DELETE FROM receipts WHERE id = ?", [receiptId]);
 
     return res.status(200)
         .json(
@@ -130,30 +183,11 @@ const searchReceipt = asyncHandler(async (req, res) => {
         )
 });
 
-const getReceiptsByStudentAcademic = asyncHandler(async (req, res) => {
-    const { academicId } = req.params;
-
-    if(!academicId){
-        throw new ApiError(400, "Academic id is required");
-    }   
-
-    const [receipts] = await pool.query("SELECT * FROM receipts WHERE student_academic_id = ?", [academicId]);
-
-    if(!receipts || receipts.length === 0){
-        throw new ApiError(404, "Receipts not found");
-    }
-
-    return res.status(200)
-        .json(
-            new ApiResponse(200, receipts, "Receipts fetched successfully")
-        )
-});
-
-export { createReceipt, 
+export { 
+    createReceipt, 
     getReceiptById, 
     getAllReceipts, 
     updateReceipt,
     deleteReceipt,
-    searchReceipt, 
-    getReceiptsByStudentAcademic 
+    searchReceipt 
 };

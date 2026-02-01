@@ -46,7 +46,7 @@ function CreateStudent() {
             const data = await res.json();
             console.log(data)
         } catch (error) {
-            console.error(error)
+            alert("student already exist")
         }
     }
 

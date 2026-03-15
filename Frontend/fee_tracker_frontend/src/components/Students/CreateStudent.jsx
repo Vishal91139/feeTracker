@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const classOptions = ['7th', '8th', '9th', '10th', '11th', '12th']
@@ -10,8 +10,11 @@ function CreateStudent() {
     
     const isModalOpen = location.pathname === "/students/create"
 
-    const [academicYears, setAcademicYears] = useState([])
-    const [isYearLoading, setIsYearLoading] = useState(false)
+    if(!isModalOpen){
+        return null;
+    }
+
+    const [isCreating, setIscreating] = useState(false)
     const [preview, setPreview] = useState(null)
     const [errors, setErrors] = useState({})
     const [formData, setFormData] = useState({
@@ -26,13 +29,14 @@ function CreateStudent() {
 
     const createReceipt = async() => {
         try {
+          setIscreating(true);
             const payload = {
                 name: formData.studentName,
                 email: formData.email,
                 mobile: formData.mobNumber,
                 parentName: formData.parentName,
-                studentClass: formData.studentClass,
-                totalFees: formData.totalAmount
+                class: formData.studentClass,
+                totalFee: formData.totalAmount
             }
 
             const res = await fetch("http://localhost:8000/student/create", {
@@ -43,39 +47,19 @@ function CreateStudent() {
                 body: JSON.stringify(payload)
             });
 
-            const data = await res.json();
-            console.log(data)
+            navigate("/students", { replace:true });
+
         } catch (error) {
-            alert("student already exist")
+            console.error("something went wrong")
+        } finally {
+          setIscreating(false)
         }
     }
-
-    useEffect(() => {
-        const loadAcademicYears = async () => {
-          setIsYearLoading(true)
-          try {
-            const response = await fetch('http://localhost:8000/academic-year/get')
-            if (!response.ok) {
-              setAcademicYears([])
-              return
-            }
-            const payload = await response.json()
-            setAcademicYears(Array.isArray(payload.data) ? payload.data : [])
-          } catch (error) {
-            setAcademicYears([])
-          } finally {
-            setIsYearLoading(false)
-          }
-        }
-    
-        loadAcademicYears()
-    }, [])
 
     const validate = () => {
         const nextErrors = {}
         if (!formData.studentName) nextErrors.studentName = 'Enter student name'
         if (!formData.studentClass) nextErrors.studentClass = 'Select class'
-        if (!formData.academicYears) nextErrors.academicYears = 'Select academic year'
         if (!formData.mobNumber) nextErrors.mobNumber = 'Enter mobile number'
         if (!formData.email) nextErrors.email = 'Enter email'
         if (!formData.totalAmount) nextErrors.totalAmount = 'Enter fee'
@@ -94,7 +78,6 @@ function CreateStudent() {
         const studentDraft = {
             student: formData.studentName,
             class: formData.studentClass,
-            academicYear: formData.academicYears,
             mobile: formData.mobNumber,
             email: formData.email,
             totalAmount: formData.totalAmount,
@@ -114,47 +97,51 @@ function CreateStudent() {
         navigate('/students', { replace: true })
     }
 
-    if(!isModalOpen){
-        return null;
-    }
-
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-      <div className="bg-slate-950 py-10">
-        <div className="mx-auto max-w-6xl px-6">
-          <button 
-              className='px-7 py-4 bg-red-500 rounded-2xl'
-              onClick={handleClose}
-            >close</button>
-          <div className="rounded-3xl bg-white shadow-2xl max-h-[85vh] overflow-y-auto">
-            
-            <div className="border-b border-slate-200 px-10 py-8">
-              <h1 className="text-3xl font-semibold text-slate-900">Create Student</h1>
+      <div className="w-full max-w-5xl px-4">
+          <div className="max-h-[88vh] overflow-y-auto rounded-3xl bg-white shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-200 bg-linear-to-r from-sky-50 to-blue-50 px-8 py-6">
+              <div>
+                <h1 className="text-3xl font-semibold text-slate-900">Create Student</h1>
               <p className="mt-2 text-sm text-slate-600">
-                Fill every required field to draft a receipt. Submission wiring can be added once API integration is ready.
+                Add the core student details and review them before creating the record.
               </p>
+              </div>
+              <button 
+                className='rounded-xl bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:bg-slate-100'
+                onClick={handleClose}
+              >Close</button>
             </div>
 
-            <form onSubmit={handleSubmit} className="px-10 py-8">
+            <form onSubmit={handleSubmit} className="px-8 py-8 md:px-10">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <label className="flex flex-col gap-2">
-                  <span className="text-sm font-medium text-slate-700">Academic Year<span className="text-rose-500">*</span></span>
-                  <select
-                    name="academicYears"
-                    value={formData.academicYears}
+
+                <label className="flex flex-col gap-2 md:col-span-2">
+                  <span className="text-sm font-medium text-slate-700">Student name<span className="text-rose-500">*</span></span>
+                  <input
+                  type='text'
+                    name="studentName"
+                    placeholder='Enter Student name'
+                    value={formData.studentName}
                     onChange={handleInputChange}
+                    className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+                  />
+
+                  {errors.studentName && <span className="text-xs font-medium text-rose-500">{errors.studentName}</span>}
+                </label>
+
+                <label className="flex flex-col gap-2 md:col-span-2">
+                  <span className="text-sm font-medium text-slate-700">Parent name<span className="text-rose-500">*</span></span>
+                  <input
+                    type='text'
+                    name="parentName"
+                    value={formData.parentName}
+                    onChange={handleInputChange}
+                    placeholder="Enter parent name"
                     className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                  >
-                    <option value="">Select academic year</option>
-                    {isYearLoading && <option value="" disabled>Loading...</option>}
-                    {!isYearLoading &&
-                      academicYears.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.year_name}
-                        </option>
-                      ))}
-                  </select>
-                  {errors.academicYears && <span className="text-xs font-medium text-rose-500">{errors.academicYears}</span>}
+                  />
+                  {errors.parentName && <span className="text-xs font-medium text-rose-500">{errors.parentName}</span>}
                 </label>
 
                 <label className="flex flex-col gap-2">
@@ -175,22 +162,8 @@ function CreateStudent() {
                   {errors.studentClass && <span className="text-xs font-medium text-rose-500">{errors.studentClass}</span>}
                 </label>
 
-                <label className="flex flex-col gap-2 md:col-span-2">
-                  <span className="text-sm font-medium text-slate-700">Student<span className="text-rose-500">*</span></span>
-                  <input
-                  type='text'
-                    name="studentName"
-                    placeholder='Enter Student name'
-                    value={formData.studentName}
-                    onChange={handleInputChange}
-                    className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-100"
-                  />
-
-                  {errors.studentName && <span className="text-xs font-medium text-rose-500">{errors.studentName}</span>}
-                </label>
-
                 <label className="flex flex-col gap-2">
-                  <span className="text-sm font-medium text-slate-700">Amount<span className="text-rose-500">*</span></span>
+                  <span className="text-sm font-medium text-slate-700">Mobile number<span className="text-rose-500">*</span></span>
                   <input
                     type="number"
                     name="mobNumber"
@@ -228,27 +201,15 @@ function CreateStudent() {
                   {errors.totalAmount && <span className="text-xs font-medium text-rose-500">{errors.totalAmount}</span>}
                 </label>
 
-                <label className="flex flex-col gap-2 md:col-span-2">
-                  <span className="text-sm font-medium text-slate-700">Parent name</span>
-                  <input
-                    type='text'
-                    name="parentName"
-                    value={formData.parentName}
-                    onChange={handleInputChange}
-                    placeholder="Notes about this payment"
-                    className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                  />
-                  {errors.parentName && <span className="text-xs font-medium text-rose-500">{errors.parentName}</span>}
-                </label>
               </div>
 
               <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
                 <div className="text-xs text-slate-500">
-                  Fields marked with * are required for the receipt payload expected by the backend.
+                  Fields marked with * are required.
                 </div>
                 <button
                   type="submit"
-                  className="rounded-full bg-gradient-to-r from-indigo-500 to-blue-600 px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                  className="rounded-xl bg-blue-600 px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-blue-200"
                 >
                   Draft Student
                 </button>
@@ -256,49 +217,45 @@ function CreateStudent() {
             </form>
 
             {preview && (
-              <div className="border-t border-slate-200 bg-slate-50 px-10 py-8">
-                <h2 className="text-xl font-semibold text-slate-900">Receipt preview</h2>
-                <p className="mt-1 text-sm text-slate-600">Verify the details before hooking up the submit action.</p>
+              <div className="border-t border-slate-200 bg-slate-50 px-8 py-8 md:px-10">
+                <h2 className="text-xl font-semibold text-slate-900">Student preview</h2>
+                <p className="mt-1 text-sm text-slate-600">Verify the details before saving.</p>
                 <div className="mt-6 grid gap-4 md:grid-cols-2">
                   <div className="rounded-xl bg-white px-5 py-4 shadow">
                     <span className="text-xs uppercase tracking-wide text-slate-400">Student</span>
                     <p className="mt-1 text-base font-medium text-slate-900">{preview.student}</p>
                   </div>
                   <div className="rounded-xl bg-white px-5 py-4 shadow">
-                    <span className="text-xs uppercase tracking-wide text-slate-400">Academic Year</span>
-                    <p className="mt-1 text-base font-medium text-slate-900">{preview.academicYear}</p>
-                  </div>
-                  <div className="rounded-xl bg-white px-5 py-4 shadow">
                     <span className="text-xs uppercase tracking-wide text-slate-400">Class</span>
                     <p className="mt-1 text-base font-medium text-slate-900">{preview.class}</p>
                   </div>
                   <div className="rounded-xl bg-white px-5 py-4 shadow">
-                    <span className="text-xs uppercase tracking-wide text-slate-400">mobile</span>
-                    <p className="mt-1 text-base font-medium text-emerald-600">INR {preview.mobile}</p>
+                    <span className="text-xs uppercase tracking-wide text-slate-400">Parent Name</span>
+                    <p className="mt-1 text-base font-medium text-slate-900">{preview.parentName}</p>
                   </div>
                   <div className="rounded-xl bg-white px-5 py-4 shadow">
-                    <span className="text-xs uppercase tracking-wide text-slate-400">email Mode</span>
+                    <span className="text-xs uppercase tracking-wide text-slate-400">mobile</span>
+                    <p className="mt-1 text-base font-medium text-slate-900">{preview.mobile}</p>
+                  </div>
+                  <div className="rounded-xl bg-white px-5 py-4 shadow">
+                    <span className="text-xs uppercase tracking-wide text-slate-400">email</span>
                     <p className="mt-1 text-base font-medium text-slate-900">{preview.email}</p>
                   </div>
                   <div className="rounded-xl bg-white px-5 py-4 shadow">
-                    <span className="text-xs uppercase tracking-wide text-slate-400">totalAmount Date</span>
-                    <p className="mt-1 text-base font-medium text-slate-900">{preview.totalAmount}</p>
-                  </div>
-                  <div className="rounded-xl bg-white px-5 py-4 shadow md:col-span-2">
-                    <span className="text-xs uppercase tracking-wide text-slate-400">RemaparentNamerks</span>
-                    <p className="mt-1 text-base font-medium text-slate-900">{preview.parentName}</p>
+                    <span className="text-xs uppercase tracking-wide text-slate-400">totalAmount</span>
+                    <p className="mt-1 text-base font-medium text-emerald-600">INR {preview.totalAmount}</p>
                   </div>
                 </div>
-              <button
+                <button
                 onClick={createReceipt}
-                className="rounded-full bg-gradient-to-r from-indigo-500 to-blue-600 px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                disabled={isCreating}
+                className="mt-6 rounded-xl bg-emerald-600 px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:bg-emerald-300"
                 >
-                  create Receipt
+                  {isCreating ? "Creating.." : "Create"}
                 </button>
               </div>
             )}
           </div>
-        </div>
       </div>
     </div>
   )

@@ -1,15 +1,19 @@
 import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
+import { NavigationBar } from '../NavigationBar/NavigationBar'
 
 function Students() {
-  const [academicYear, setAcademicYear] = useState([])
   const [year, setYear] = useState("")
   const [studentClass, setStudentClass] = useState("")
+  const [academicYear, setAcademicYear] = useState([])
   const [name, setName] = useState("")
   const [student, setStudent] = useState([])
+  const [isDeletingStudent, setIsDeletingStudent] = useState(null)
 
   const navigate = useNavigate();
+
+  const selectedYearId = academicYear.find((item) => item.year_name === year)?.id ?? null
 
   const handleSearch = async () => {
     const params = new URLSearchParams();
@@ -18,10 +22,8 @@ function Students() {
     if (studentClass) params.append("class", studentClass);
     if (name) params.append("name", name);
 
-    const endpoint = name ? "/student" : "/student/get";
-
     try{
-      const res = await fetch(`http://localhost:8000${endpoint}?${params.toString()}`)
+      const res = await fetch(`http://localhost:8000/student/get?${params.toString()}`)
       const data = await res.json()
       if(!res.ok) {
         setStudent([])
@@ -30,6 +32,35 @@ function Students() {
       setStudent(Array.isArray(data.data) ? data.data : []);
     } catch(e) {
       setStudent([]);
+    }
+  }
+
+  const handleDeleteStudent = async (studentId, studentName) => {
+    const confirmed = window.confirm(`Delete ${studentName}? This cannot be undone.`)
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      setIsDeletingStudent(studentId)
+      const res = await fetch(`http://localhost:8000/student${studentId}`, {
+        method: 'DELETE',
+      })
+
+      if (!res.ok) {
+        window.alert('Failed to delete student')
+        return
+      }
+
+      setStudent((previous) => previous.filter((item) => item.studentId !== studentId))
+
+      if (year && studentClass) {
+        handleSearch()
+      }
+    } catch (error) {
+      window.alert('Failed to delete student')
+    } finally {
+      setIsDeletingStudent(null)
     }
   }
 
@@ -52,19 +83,28 @@ function Students() {
 
   return (
     <>
-    <div className="min-h-screen bg-gray-900">
-      <div className="max-w-5xl mx-auto p-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="px-6 pt-6">
-            <h2 className="text-xl font-semibold text-gray-900 text-center m-10">Student List</h2>
+    <div className="flex h-screen overflow-hidden bg-slate-50">
+      <NavigationBar />
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-6 pt-20 md:p-8 md:pt-8">
+        <header className="mb-6 rounded-2xl border border-sky-100 bg-linear-to-r from-sky-50 to-blue-50 px-6 py-5 shadow-sm">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold text-slate-800">Students</h2>
+              <p className="mt-1 text-sm text-slate-500">Search and manage student records.</p>
+            </div>
+            <div className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-sky-700 shadow-sm">
+              {student.length} records
+            </div>
           </div>
+        </header>
 
-          <div className="px-6 py-4">
-            <div className="flex flex-wrap items-center justify-center gap-4">
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4 flex-1">
               <select
                 value={year}
                 onChange={(e) => setYear(e.target.value)}
-                className="bg-gray-100 text-gray-900 border-0 rounded-md p-2 focus:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150"
+                className="min-w-40 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm transition focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
               >
                 <option value="">Academic Year</option>
                 { academicYear.length > 0 && academicYear.map((item, idx) => (
@@ -74,7 +114,7 @@ function Students() {
               <select
                 value={studentClass}
                 onChange={(e) => setStudentClass(e.target.value)}
-                className="bg-gray-100 text-gray-900 border-0 rounded-md p-2 focus:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150"
+                className="min-w-32 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm transition focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
               >
                 <option value="">Class</option>
                 <option value="7th">7th</option>
@@ -86,49 +126,86 @@ function Students() {
               </select>
               <input
                 type='text'
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 placeholder='Enter Student Name'
-                className="w-64 bg-gray-100 text-gray-900 border-0 rounded-md p-2 focus:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150"
+                className="w-64 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm transition focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
               />
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
               <button
                 onClick={handleSearch}
-                className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold py-2 px-4 rounded-md hover:to-blue-600 transition ease-in-out duration-150"
+                className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.99]"
               >
                 Search
               </button>
               <button
-              onClick={() => navigate("/students/create")}
-                className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold py-2 px-4 rounded-md hover:to-blue-600 transition ease-in-out duration-150"
+              onClick={() => navigate("/students/create", {replace:true})}
+                className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.99]"
               >
                 +Create
               </button>
             </div>
           </div>
+        </section>
 
-          <div className="overflow-x-auto">
+        <section className="mt-6 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 px-6 py-4">
+            <h3 className="text-lg font-semibold text-slate-800">Student List</h3>
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-auto">
             <table className="min-w-full table-fixed">
-              <thead className="bg-gray-50">
+              <thead className="bg-slate-50">
                 <tr>
-                  <th className="w-24 px-4 py-2 text-cente text-sm font-semibold text-gray-700 bg-amber-100 ">S.No</th>
-                  <th className="px-4 py-2 text-ceter text-sm font-semibold text-gray-700 bg-amber-200">Name</th>
-                  <th className="w-36 px-4 py-2 text-cener text-sm font-semibold text-gray-700 bg-amber-300">Class</th>
-                  <th className="px-4 py-2 text-ceter text-sm font-semibold text-gray-700 bg-amber-400">Parent Name</th>
-                  <th className="w-52 px-4 py-2 text-centr text-sm font-semibold text-gray-700 bg-amber-500">Academic Year</th>
+                  <th className="w-24 px-4 py-3 text-center text-sm font-semibold text-slate-600">S.No</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Name</th>
+                  <th className="w-36 px-4 py-3 text-center text-sm font-semibold text-slate-600">Class</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Parent Name</th>
+                  <th className="w-52 px-4 py-3 text-center text-sm font-semibold text-slate-600">Academic Year</th>
+                  <th className="w-52 px-4 py-3 text-center text-sm font-semibold text-slate-600">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 text-center">
                 {student.length > 0 && student.map((item, idx) => (
-                  <tr key={item.studentId ?? idx} className="odd:bg-white even:bg-gray-50">
-                    <td className="px-4 py-2 text-gray-900">{idx + 1}</td>
-                    <td className="px-4 py-2 text-gray-900">{item.full_name}</td>
-                    <td className="px-4 py-2 text-gray-700">{item.class}</td>
-                    <td className="px-4 py-2 text-gray-700">{item.parent_name ? item.parent_name : '-'}</td>
-                    <td className="px-4 py-2 text-gray-700">{item.year_name}</td>
+                  <tr key={item.studentId ?? idx} className="odd:bg-white even:bg-slate-50/60 hover:bg-blue-50/60 transition-colors">
+                    <td className="px-4 py-3 text-slate-900">{idx + 1}</td>
+                    <td className="px-4 py-3 text-slate-900">{item.full_name}</td>
+                    <td className="px-4 py-3 text-slate-700">{item.class}</td>
+                    <td className="px-4 py-3 text-slate-700">{item.parent_name ? item.parent_name : '-'}</td>
+                    <td className="px-4 py-3 text-slate-700">{item.year_name}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/students/${item.studentId}`)}
+                          className="rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+                        >
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/students/${item.studentId}/edit`)}
+                          className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 transition hover:bg-amber-100"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteStudent(item.studentId, item.full_name)}
+                          disabled={isDeletingStudent === item.studentId}
+                          className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {isDeletingStudent === item.studentId ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
 
                 {student.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-sm text-gray-500">
+                    <td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-500">
                       No students found. Adjust filters and try again.
                     </td>
                   </tr>
@@ -136,10 +213,10 @@ function Students() {
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
-    <Outlet />
+    <Outlet context={{ year, studentClass, selectedYearId, refreshStudents: handleSearch }} />
     </>
   )
 }

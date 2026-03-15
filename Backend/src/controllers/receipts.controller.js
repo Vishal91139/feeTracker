@@ -82,19 +82,68 @@ const getReceiptById = asyncHandler(async (req, res) => {
         )
 });
 
-const getAllReceipts = asyncHandler(async (req, res) => {
-    const { yearId } = req.params;
+// Get receipt by filter like year and receiptNo and class
+const getReceipts = asyncHandler(async (req, res) => {
+    const { year, receiptNo, class:studentClass } = req.query;
 
-    const [receipts] = await pool.query("SELECT r.id AS receipt_id, r.receipt_number, s.full_name, sa.class, ay.year_name, r.amount, r.payment_mode, r.payment_date FROM receipts r JOIN student_academics sa ON r.student_academic_id = sa.id JOIN students s ON sa.student_id = s.id JOIN academic_years ay ON sa.academic_year_id = ay.id  WHERE ay.id = ? ORDER BY r.created_at DESC",[yearId]);
+    // Fetch active year from DB if year is not provided
+    let activeYear = year;
+    if (!activeYear) {
+        const [[currentYear]] = await pool.query(
+            "SELECT year_name FROM academic_years WHERE is_current = 1 LIMIT 1"
+        );
 
-    if(!receipts || receipts.length === 0){
+        if (!currentYear) {
+            throw new ApiError(404, "No active academic year found");
+        }
+
+        activeYear = currentYear.year_name;
+    }
+
+    let query = `
+        SELECT 
+            r.id AS receipt_id, 
+            r.receipt_number, 
+            s.full_name, 
+            sa.class, 
+            ay.year_name, 
+            r.amount, 
+            r.payment_mode, 
+            r.payment_date 
+        FROM receipts r 
+        JOIN student_academics sa ON r.student_academic_id = sa.id 
+        JOIN students s ON sa.student_id = s.id 
+        JOIN academic_years ay ON sa.academic_year_id = ay.id
+        WHERE 1=1
+    `;
+    let params = [];
+
+    if (activeYear) {
+        query += " AND ay.year_name = ?";
+        params.push(activeYear);
+    }
+
+    if(studentClass) {
+        query += " AND sa.class = ?"
+        params.push(studentClass);
+    }
+
+    if (receiptNo) {
+        query += " AND r.receipt_number = ?";
+        params.push(receiptNo);
+    }
+
+    query += " ORDER BY r.payment_date DESC";
+
+    const [receipts] = await pool.query(query, params);
+
+    if (!receipts || receipts.length === 0) {
         throw new ApiError(404, "Receipts not found");
     }
 
-    return res.status(200)
-        .json(
-            new ApiResponse(200, receipts, "Receipts fetched successfully")
-        )
+    return res.status(200).json(
+        new ApiResponse(200, receipts, "Receipts fetched successfully")
+    );
 });
 
 const updateReceipt = asyncHandler(async (req, res) => {
@@ -164,30 +213,11 @@ const deleteReceipt = asyncHandler(async (req, res) => {
         )
 });
 
-const searchReceipt = asyncHandler(async (req, res) => {
-    const { receiptNo } = req.query;
-
-    if(!receiptNo){
-        throw new ApiError(400, "Receipt number is required");
-    }
-
-    const [receipts] = await pool.query("SELECT * FROM receipts WHERE receipt_number = ?", [receiptNo]);
-
-    if(!receipts || receipts.length === 0){
-        throw new ApiError(404, "Receipt not found");
-    }
-
-    return res.status(200)
-        .json(
-            new ApiResponse(200, receipts, "Receipt fetched successfully")
-        )
-});
 
 export { 
     createReceipt, 
     getReceiptById, 
-    getAllReceipts, 
+    getReceipts, 
     updateReceipt,
-    deleteReceipt,
-    searchReceipt 
+    deleteReceipt, 
 };

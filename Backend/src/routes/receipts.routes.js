@@ -1,18 +1,15 @@
 import { Router } from 'express';
 import { createReceipt,
     getReceiptById,
-    getAllReceipts,
+    getReceipts,
     updateReceipt, 
-    deleteReceipt,
-    searchReceipt } from '../controllers/receipts.controller.js';
+    deleteReceipt } from '../controllers/receipts.controller.js';
 
 const router = Router();
 
 router.route('/create').post(createReceipt);
+router.route('/').get(getReceipts)
 router.route('/:receiptId').get(getReceiptById);
-router.route('/').get(getAllReceipts);
-router.route('/:id').patch(updateReceipt);
-router.route('/:id').delete(deleteReceipt);
-router.route('/search').get(searchReceipt);
+router.route('/:receiptId').patch(updateReceipt).delete(deleteReceipt);
 
 export default router;

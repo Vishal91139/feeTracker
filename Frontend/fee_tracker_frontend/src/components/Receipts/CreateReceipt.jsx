@@ -30,7 +30,7 @@ function CreateReceipt() {
     try {
       const payload = {
         academicYearId: formData.academicYearId,
-        class: formData.studentClass,
+        studentClass: formData.studentClass,
         studentId: formData.studentId,
         amount: formData.amount,
         paymentMode: formData.paymentMode,
@@ -47,9 +47,11 @@ function CreateReceipt() {
       });
 
       const data = await res.json();
-      console.log(data)
+      console.log(data);
     } catch (error) {
-       console.error(error);
+      alert(" not created")
+    } finally {
+      handleClose();
     }
   }
 
@@ -175,22 +177,22 @@ function CreateReceipt() {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-      <div className="bg-slate-950 py-10">
-        <div className="mx-auto max-w-6xl px-6">
-          <button 
-              className='px-7 py-4 bg-red-500 rounded-2xl'
-              onClick={handleClose}
-            >close</button>
-          <div className="rounded-3xl bg-white shadow-2xl max-h-[85vh] overflow-y-auto">
-            
-            <div className="border-b border-slate-200 px-10 py-8">
-              <h1 className="text-3xl font-semibold text-slate-900">Create Receipt</h1>
+      <div className="w-full max-w-5xl px-4">
+          <div className="max-h-[88vh] overflow-y-auto rounded-3xl bg-white shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-200 bg-linear-to-r from-emerald-50 to-cyan-50 px-8 py-6">
+              <div>
+                <h1 className="text-3xl font-semibold text-slate-900">Create Receipt</h1>
               <p className="mt-2 text-sm text-slate-600">
-                Fill every required field to draft a receipt. Submission wiring can be added once API integration is ready.
+                Fill the payment details and verify the preview before saving.
               </p>
+              </div>
+              <button 
+                className='rounded-xl bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:bg-slate-100'
+                onClick={handleClose}
+              >Close</button>
             </div>
 
-            <form onSubmit={handleSubmit} className="px-10 py-8">
+            <form onSubmit={handleSubmit} className="px-8 py-8 md:px-10">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <label className="flex flex-col gap-2">
                   <span className="text-sm font-medium text-slate-700">Academic Year<span className="text-rose-500">*</span></span>
@@ -326,7 +328,7 @@ function CreateReceipt() {
                 </div>
                 <button
                   type="submit"
-                  className="rounded-full bg-gradient-to-r from-indigo-500 to-blue-600 px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                  className="rounded-xl bg-blue-600 px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-blue-200"
                 >
                   Draft Receipt
                 </button>
@@ -334,7 +336,7 @@ function CreateReceipt() {
             </form>
 
             {preview && (
-              <div className="border-t border-slate-200 bg-slate-50 px-10 py-8">
+              <div className="border-t border-slate-200 bg-slate-50 px-8 py-8 md:px-10">
                 <h2 className="text-xl font-semibold text-slate-900">Receipt preview</h2>
                 <p className="mt-1 text-sm text-slate-600">Verify the details before hooking up the submit action.</p>
                 <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -369,14 +371,12 @@ function CreateReceipt() {
                 </div>
               <button
                 onClick={createReceipt}
-                className="rounded-full bg-gradient-to-r from-indigo-500 to-blue-600 px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                >
+                className="mt-6 rounded-xl bg-emerald-600 px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-emerald-200">
                   create Receipt
                 </button>
               </div>
             )}
           </div>
-        </div>
       </div>
     </div>
   )

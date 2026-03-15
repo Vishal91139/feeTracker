@@ -49,13 +49,24 @@ function ViewReceipt() {
 
   return (
     <>
-    <div className="fixed inset-0 bg-black/50 z-100 flex items-center justify-center">
-        <div className="bg-slate-950 py-1">
-            <button className='px-7 py-4 bg-red-500 rounded-2xl print:hidden'
-            onClick={handleClose}
-            >Close</button>
-            <div className="mx-auto max-w-10xl px-1">
-                <div className="border-t border-slate-200 bg-slate-50 px-10 py-8 print:w-full print:mx-0 print:p-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                <div className="w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl print:max-w-none print:rounded-none print:shadow-none">
+                        <div className="flex items-center justify-between border-b border-slate-200 bg-linear-to-r from-emerald-50 to-cyan-50 px-8 py-5 print:hidden">
+                            <div>
+                                <h2 className="text-2xl font-semibold text-slate-900">Receipt</h2>
+                                <p className="mt-1 text-sm text-slate-500">Review and print receipt details.</p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <button className='rounded-xl bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:bg-slate-100'
+                                    onClick={handleClose}
+                                >Close</button>
+                                <button className='rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700'
+                                    onClick={printReceipt}
+                                >Print</button>
+                            </div>
+                        </div>
+                        <div className="mx-auto max-w-10xl px-1">
+                                <div className="bg-slate-50 px-8 py-8 print:w-full print:mx-0 print:bg-white print:p-0">
                     <h2 className="text-xl font-semibold text-slate-900">Receipt</h2>
                     {loading && (
                         <p className="mt-2 text-sm text-slate-500">Loading receipt...</p>
@@ -95,9 +106,6 @@ function ViewReceipt() {
                     </div>
                 </div>
             </div>
-            <button className='px-7 py-4 bg-blue-400 rounded-2xl print:hidden'
-            onClick={printReceipt}
-            >Print</button>
         </div>
     </div>
     </>

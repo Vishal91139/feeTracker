@@ -5,13 +5,17 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 // create a new student and enroll them in the current academic year
 const createStudent = asyncHandler(async(req, res) => {
-    const { name, email, mobile, parentName, studentClass, totalFee } = req.body;
+    const { name, email, mobile, parentName, class:studentClass, totalFee } = req.body;
 
     if(!name || !email || !mobile || !parentName || !studentClass || !totalFee){
         throw new ApiError(400, "All fields are required");
     }
 
     const [student] = await pool.query("INSERT INTO students (full_name, email, mobile, parent_name) VALUES (?, ?, ?, ?)", [name, email, mobile, parentName]);
+    
+    if (!student || student.affectedRows === 0) {
+      throw new ApiError(500, "Failed to create student");
+    }
 
     const [currentYear] = await pool.query("SELECT * FROM academic_years WHERE is_current = 1");
 
@@ -27,15 +31,37 @@ const createStudent = asyncHandler(async(req, res) => {
         )
 })
 
-// get all students of a class in a particular year
-const getAllStudents = asyncHandler(async(req, res) => {
-    const { studentClass, yearId } = req.query;
+// get all students of a class in a particular year also get student by name (filters)
+const getStudents = asyncHandler(async(req, res) => {
+    const { class:studentClass, year, name } = req.query;
 
-    if(!studentClass || !yearId){
-        throw new ApiError(400, "Class and year are required");
+    if(!studentClass){
+        throw new ApiError(400, "Class is required");
+    }
+    
+    // Fetch active year from DB if year is not provided
+    let activeYear = year;
+    if (!activeYear) {
+        const [[currentYear]] = await pool.query(
+            "SELECT year_name FROM academic_years WHERE is_current = 1 LIMIT 1"
+        );
+
+        if (!currentYear) {
+            throw new ApiError(404, "No active academic year found");
+        }
+
+        activeYear = currentYear.year_name;
     }
 
-    const [students] = await pool.query("SELECT s.id As studentId, s.full_name, sa.class, s.parent_name, ay.year_name, sa.due_amount FROM students s JOIN student_academics sa ON s.id = sa.student_id JOIN academic_years ay on ay.id = sa.academic_year_id WHERE sa.class = ? AND ay.id = ?", [studentClass, yearId]);
+    let query = "SELECT s.id As studentId, s.full_name, sa.class, s.parent_name, ay.year_name, sa.due_amount FROM students s JOIN student_academics sa ON s.id = sa.student_id JOIN academic_years ay on ay.id = sa.academic_year_id WHERE sa.class = ? AND ay.year_name = ?"
+    let params = [studentClass, activeYear];
+
+    if(name) {
+        query += " AND s.full_name LIKE ?"
+        params.push(`%${name}%`)
+    }
+
+    const [students] = await pool.query(query, params)
     
     if(!students || students.length===0){
         throw new ApiError(404, "No students found for this class and year");
@@ -149,35 +175,15 @@ const deleteStudent = asyncHandler(async(req, res) => {
         )
 })
 
-// search students by name, class and year
-const searchStudent = asyncHandler(async(req, res) => {
-    const { name:query, studentClass, yearId } = req.query;
-
-    if(!query || !studentClass || !yearId){
-        throw new ApiError(400, "Name is required");
-    }
-
-    const [student] = await pool.query("SELECT s.id as studentId, s.full_name, sa.class, s.parent_name, ay.year_name, sa.due_amount FROM students s JOIN student_academics sa ON s.id = sa.student_id JOIN academic_years ay ON ay.id = sa.academic_year_id WHERE s.full_name LIKE ? AND sa.class = ? AND ay.id = ?", [`%${query}%`, studentClass, yearId]);
-
-    if(!student || student.length===0){
-        throw new ApiError(404, "No students found");
-    }
-
-    return res.status(200)
-        .json(
-            new ApiResponse(200, student, "Students fetched successfully")
-        )
-})
-
 const getReceiptsByStudentAcademic = asyncHandler(async (req, res) => {
     const { studentId } = req.params;
-    const { studentClass, yearId } = req.query;
+    const { class:studentClass, year } = req.query;
 
-    if (!studentId || !studentClass || !yearId) {
+    if (!studentId || !studentClass || !year) {
         throw new ApiError(400, "studentId, class and yearId are required");
     }  
 
-    const [receipts] = await pool.query("SELECT r.id AS receipt_id, r.receipt_number, s.full_name, sa.class, ay.year_name, r.amount, r.payment_mode, r.payment_date, r.remarks FROM receipts r JOIN student_academics sa ON r.student_academic_id = sa.id JOIN students s ON sa.student_id = s.id JOIN academic_years ay ON sa.academic_year_id = ay.id WHERE sa.student_id = ? AND sa.class = ? AND sa.academic_year_id = ? ORDER BY r.created_at DESC",[studentId, studentClass, yearId]);
+    const [receipts] = await pool.query("SELECT s.id as studentId, s.full_name, sa.class, ay.year_name, r.id As ReceiptId, r.receipt_number, r.amount, r.payment_mode, r.payment_date, r.remarks FROM receipts r JOIN student_academics sa ON sa.id = r.student_academic_id JOIN students s ON s.id = sa.student_id JOIN academic_years ay ON ay.id = sa.academic_year_id WHERE sa.student_id = ? AND sa.class = ? AND ay.year_name = ? ORDER BY r.created_at DESC",[studentId, studentClass, year]);
 
     if(!receipts || receipts.length === 0){
         throw new ApiError(404, "Receipts not found for this student");
@@ -191,10 +197,9 @@ const getReceiptsByStudentAcademic = asyncHandler(async (req, res) => {
 
 export {
     createStudent,
-    getAllStudents,
+    getStudents,
     getStudentById,
     updateStudent,
     deleteStudent,
-    searchStudent,
     getReceiptsByStudentAcademic
 }

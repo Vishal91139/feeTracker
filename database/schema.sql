@@ -25,7 +25,8 @@ CREATE TABLE students (
 CREATE TABLE academic_years (
   id INT AUTO_INCREMENT PRIMARY KEY,
   year_name VARCHAR(20) UNIQUE NOT NULL,
-  is_current BOOLEAN DEFAULT FALSE
+  is_current BOOLEAN DEFAULT FALSE,
+  is_active BOOLEAN DEFAULT FALSE
 );
 
 
@@ -55,7 +56,7 @@ CREATE TABLE receipts (
   receipt_number VARCHAR(50) UNIQUE NOT NULL,
   amount DECIMAL(10,2) NOT NULL,
 
-  payment_mode ENUM('CASH','UPI','CARD','BANK') NOT NULL,
+  payment_mode ENUM('CASH','UPI','CARD','BANK','CHEQUE') NOT NULL,
   payment_date DATE NOT NULL,
 
   remarks VARCHAR(255),

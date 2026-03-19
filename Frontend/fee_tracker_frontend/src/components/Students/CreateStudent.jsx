@@ -1,12 +1,16 @@
-import React, { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 
 const classOptions = ['7th', '8th', '9th', '10th', '11th', '12th']
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const mobileRegex = /^\d{10}$/
 
 function CreateStudent() {
 
     const location = useLocation();
     const navigate = useNavigate();
+  const outletContext = useOutletContext()
+  const refreshStudents = outletContext?.refreshStudents
     
     const isModalOpen = location.pathname === "/students/create"
 
@@ -16,7 +20,9 @@ function CreateStudent() {
 
     const [isCreating, setIscreating] = useState(false)
     const [preview, setPreview] = useState(null)
+    const [submitError, setSubmitError] = useState('')
     const [errors, setErrors] = useState({})
+    const previewRef = useRef(null)
     const [formData, setFormData] = useState({
         academicYears: '',
         studentClass: '',
@@ -27,7 +33,8 @@ function CreateStudent() {
         parentName: '',
     })
 
-    const createReceipt = async() => {
+    const createStudent = async() => {
+      setSubmitError('')
         try {
           setIscreating(true);
             const payload = {
@@ -47,10 +54,19 @@ function CreateStudent() {
                 body: JSON.stringify(payload)
             });
 
+            const responsePayload = await res.json().catch(() => null)
+            if (!res.ok) {
+              throw new Error(responsePayload?.message || 'Failed to create student')
+            }
+
+            if (typeof refreshStudents === 'function') {
+              await refreshStudents()
+            }
+
             navigate("/students", { replace:true });
 
         } catch (error) {
-            console.error("something went wrong")
+            setSubmitError(error.message || 'Failed to create student')
         } finally {
           setIscreating(false)
         }
@@ -60,8 +76,17 @@ function CreateStudent() {
         const nextErrors = {}
         if (!formData.studentName) nextErrors.studentName = 'Enter student name'
         if (!formData.studentClass) nextErrors.studentClass = 'Select class'
-        if (!formData.mobNumber) nextErrors.mobNumber = 'Enter mobile number'
-        if (!formData.email) nextErrors.email = 'Enter email'
+        if (!formData.mobNumber) {
+          nextErrors.mobNumber = 'Enter mobile number'
+        } else if (!mobileRegex.test(String(formData.mobNumber).trim())) {
+          nextErrors.mobNumber = 'Mobile number must be exactly 10 digits'
+        }
+
+        if (!formData.email) {
+          nextErrors.email = 'Enter email'
+        } else if (!emailRegex.test(String(formData.email).trim())) {
+          nextErrors.email = 'Enter a valid email address'
+        }
         if (!formData.totalAmount) nextErrors.totalAmount = 'Enter fee'
         if (!formData.parentName) nextErrors.parentName = 'Enter parent name'
         setErrors(nextErrors)
@@ -75,6 +100,8 @@ function CreateStudent() {
             return
         }
 
+      setSubmitError('')
+
         const studentDraft = {
             student: formData.studentName,
             class: formData.studentClass,
@@ -87,6 +114,16 @@ function CreateStudent() {
         setPreview(studentDraft)
     }
 
+    useEffect(() => {
+      if (!preview || !previewRef.current) {
+        return
+      }
+
+      requestAnimationFrame(() => {
+        previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    }, [preview])
+
     const handleInputChange = (event) => {
         const { name, value } = event.target
         setFormData((previous) => ({ ...previous, [name]: value }))
@@ -98,9 +135,9 @@ function CreateStudent() {
     }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div className="app-modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
       <div className="w-full max-w-5xl px-4">
-          <div className="max-h-[88vh] overflow-y-auto rounded-3xl bg-white shadow-2xl">
+          <div className="app-modal-panel max-h-[88vh] overflow-y-auto rounded-3xl bg-white shadow-2xl">
             <div className="flex items-start justify-between border-b border-slate-200 bg-linear-to-r from-sky-50 to-blue-50 px-8 py-6">
               <div>
                 <h1 className="text-3xl font-semibold text-slate-900">Create Student</h1>
@@ -165,11 +202,13 @@ function CreateStudent() {
                 <label className="flex flex-col gap-2">
                   <span className="text-sm font-medium text-slate-700">Mobile number<span className="text-rose-500">*</span></span>
                   <input
-                    type="number"
+                    type="tel"
                     name="mobNumber"
                     placeholder="Enter mobile number"
                     value={formData.mobNumber}
                     onChange={handleInputChange}
+                    inputMode="numeric"
+                    maxLength={10}
                     className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
                   />
                   {errors.mobNumber && <span className="text-xs font-medium text-rose-500">{errors.mobNumber}</span>}
@@ -217,7 +256,7 @@ function CreateStudent() {
             </form>
 
             {preview && (
-              <div className="border-t border-slate-200 bg-slate-50 px-8 py-8 md:px-10">
+              <div ref={previewRef} className="app-fade-in border-t border-slate-200 bg-slate-50 px-8 py-8 md:px-10">
                 <h2 className="text-xl font-semibold text-slate-900">Student preview</h2>
                 <p className="mt-1 text-sm text-slate-600">Verify the details before saving.</p>
                 <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -246,12 +285,15 @@ function CreateStudent() {
                     <p className="mt-1 text-base font-medium text-emerald-600">INR {preview.totalAmount}</p>
                   </div>
                 </div>
+                {submitError && (
+                  <p className="mt-4 text-sm font-medium text-rose-600">{submitError}</p>
+                )}
                 <button
-                onClick={createReceipt}
+                onClick={createStudent}
                 disabled={isCreating}
                 className="mt-6 rounded-xl bg-emerald-600 px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:bg-emerald-300"
                 >
-                  {isCreating ? "Creating.." : "Create"}
+                  {isCreating ? "Creating..." : "Create Student"}
                 </button>
               </div>
             )}

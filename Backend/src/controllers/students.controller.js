@@ -3,15 +3,34 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const mobileRegex = /^\d{10}$/;
+
+const normalizeString = (value) => String(value ?? "").trim();
+
 // create a new student and enroll them in the current academic year
 const createStudent = asyncHandler(async(req, res) => {
     const { name, email, mobile, parentName, class:studentClass, totalFee } = req.body;
 
-    if(!name || !email || !mobile || !parentName || !studentClass || !totalFee){
+    const normalizedName = normalizeString(name);
+    const normalizedEmail = normalizeString(email).toLowerCase();
+    const normalizedMobile = normalizeString(mobile);
+    const normalizedParentName = normalizeString(parentName);
+    const normalizedClass = normalizeString(studentClass);
+
+    if(!normalizedName || !normalizedEmail || !normalizedMobile || !normalizedParentName || !normalizedClass || !totalFee){
         throw new ApiError(400, "All fields are required");
     }
 
-    const [student] = await pool.query("INSERT INTO students (full_name, email, mobile, parent_name) VALUES (?, ?, ?, ?)", [name, email, mobile, parentName]);
+    if (!emailRegex.test(normalizedEmail)) {
+        throw new ApiError(400, "Invalid email format");
+    }
+
+    if (!mobileRegex.test(normalizedMobile)) {
+        throw new ApiError(400, "Mobile number must be exactly 10 digits");
+    }
+
+    const [student] = await pool.query("INSERT INTO students (full_name, email, mobile, parent_name) VALUES (?, ?, ?, ?)", [normalizedName, normalizedEmail, normalizedMobile, normalizedParentName]);
     
     if (!student || student.affectedRows === 0) {
       throw new ApiError(500, "Failed to create student");
@@ -23,7 +42,7 @@ const createStudent = asyncHandler(async(req, res) => {
         throw new ApiError(404, "Current academic year not found");
     }
 
-    const [enrolledStudent] = await pool.query("INSERT INTO student_academics (student_id, academic_year_id, class, total_fee) VALUES (?, ?, ?, ?)", [student.insertId, currentYear[0].id, studentClass, totalFee]);
+    const [enrolledStudent] = await pool.query("INSERT INTO student_academics (student_id, academic_year_id, class, total_fee) VALUES (?, ?, ?, ?)", [student.insertId, currentYear[0].id, normalizedClass, totalFee]);
 
     return res.status(201)
         .json(
@@ -34,16 +53,12 @@ const createStudent = asyncHandler(async(req, res) => {
 // get all students of a class in a particular year also get student by name (filters)
 const getStudents = asyncHandler(async(req, res) => {
     const { class:studentClass, year, name } = req.query;
-
-    if(!studentClass){
-        throw new ApiError(400, "Class is required");
-    }
     
     // Fetch active year from DB if year is not provided
     let activeYear = year;
     if (!activeYear) {
         const [[currentYear]] = await pool.query(
-            "SELECT year_name FROM academic_years WHERE is_current = 1 LIMIT 1"
+            "SELECT year_name FROM academic_years WHERE is_active = 1 LIMIT 1"
         );
 
         if (!currentYear) {
@@ -53,8 +68,13 @@ const getStudents = asyncHandler(async(req, res) => {
         activeYear = currentYear.year_name;
     }
 
-    let query = "SELECT s.id As studentId, s.full_name, sa.class, s.parent_name, ay.year_name, sa.due_amount FROM students s JOIN student_academics sa ON s.id = sa.student_id JOIN academic_years ay on ay.id = sa.academic_year_id WHERE sa.class = ? AND ay.year_name = ?"
-    let params = [studentClass, activeYear];
+    let query = "SELECT s.id As studentId, s.full_name, sa.class, s.parent_name, ay.year_name, sa.due_amount FROM students s JOIN student_academics sa ON s.id = sa.student_id JOIN academic_years ay on ay.id = sa.academic_year_id WHERE ay.year_name = ?"
+    let params = [activeYear];
+
+    if(studentClass) {
+        query += " AND sa.class = ?"
+        params.push(studentClass)
+    }
 
     if(name) {
         query += " AND s.full_name LIKE ?"
@@ -63,10 +83,6 @@ const getStudents = asyncHandler(async(req, res) => {
 
     const [students] = await pool.query(query, params)
     
-    if(!students || students.length===0){
-        throw new ApiError(404, "No students found for this class and year");
-    }
-
     return res.status(200)
         .json(
             new ApiResponse(200, students, "Students fetched successfully")
@@ -89,7 +105,7 @@ const getStudentById = asyncHandler(async(req, res) => {
         query = `SELECT s.id as studentId, s.full_name, sa.class, ay.year_name, s.parent_name, s.mobile, s.email, sa.total_fee, sa.paid_amount, sa.due_amount FROM students s JOIN student_academics sa on s.id = sa.student_id JOIN academic_years ay on ay.id = sa.academic_year_id WHERE s.id = ? AND ay.id = ?`;
         queryParam = [studentId, yearId];
     } else {
-        query = `SELECT s.id as studentId, s.full_name, sa.class, ay.year_name, s.parent_name, s.mobile, s.email, sa.total_fee, sa.paid_amount, sa.due_amount FROM students s JOIN student_academics sa on s.id = sa.student_id JOIN academic_years ay on ay.id = sa.academic_year_id WHERE s.id = ? AND ay.is_current = 1`;
+        query = `SELECT s.id as studentId, s.full_name, sa.class, ay.year_name, s.parent_name, s.mobile, s.email, sa.total_fee, sa.paid_amount, sa.due_amount FROM students s JOIN student_academics sa on s.id = sa.student_id JOIN academic_years ay on ay.id = sa.academic_year_id WHERE s.id = ? AND ay.is_active = 1`;
         queryParam = [studentId];
     }
 
@@ -125,6 +141,17 @@ const updateStudent = asyncHandler(async(req, res) => {
 
     const clean = (v) => (v && v.trim() !== "" ? v : null);
 
+    const cleanedEmail = clean(email);
+    const cleanedMobile = clean(mobile);
+
+    if (cleanedEmail && !emailRegex.test(cleanedEmail)) {
+        throw new ApiError(400, "Invalid email format");
+    }
+
+    if (cleanedMobile && !mobileRegex.test(cleanedMobile)) {
+        throw new ApiError(400, "Mobile number must be exactly 10 digits");
+    }
+
     const sql = `
       UPDATE students
       SET
@@ -137,8 +164,8 @@ const updateStudent = asyncHandler(async(req, res) => {
 
     const values = [
       clean(name),
-      clean(email),
-      clean(mobile),
+            cleanedEmail,
+            cleanedMobile,
       clean(parentName),
       studentId
     ];
@@ -183,11 +210,7 @@ const getReceiptsByStudentAcademic = asyncHandler(async (req, res) => {
         throw new ApiError(400, "studentId, class and yearId are required");
     }  
 
-    const [receipts] = await pool.query("SELECT s.id as studentId, s.full_name, sa.class, ay.year_name, r.id As ReceiptId, r.receipt_number, r.amount, r.payment_mode, r.payment_date, r.remarks FROM receipts r JOIN student_academics sa ON sa.id = r.student_academic_id JOIN students s ON s.id = sa.student_id JOIN academic_years ay ON ay.id = sa.academic_year_id WHERE sa.student_id = ? AND sa.class = ? AND ay.year_name = ? ORDER BY r.created_at DESC",[studentId, studentClass, year]);
-
-    if(!receipts || receipts.length === 0){
-        throw new ApiError(404, "Receipts not found for this student");
-    }
+    const [receipts] = await pool.query("SELECT s.id as studentId, s.full_name, sa.class, ay.year_name, r.id As ReceiptId, r.receipt_number, r.amount, r.payment_mode, DATE_FORMAT(r.payment_date, '%Y-%m-%d') AS payment_date, r.remarks FROM receipts r JOIN student_academics sa ON sa.id = r.student_academic_id JOIN students s ON s.id = sa.student_id JOIN academic_years ay ON ay.id = sa.academic_year_id WHERE sa.student_id = ? AND sa.class = ? AND ay.year_name = ? ORDER BY r.created_at DESC",[studentId, studentClass, year]);
 
     return res.status(200)
         .json(

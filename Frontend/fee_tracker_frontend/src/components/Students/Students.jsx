@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react'
-import { useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { NavigationBar } from '../NavigationBar/NavigationBar'
 
@@ -10,18 +9,23 @@ function Students() {
   const [name, setName] = useState("")
   const [student, setStudent] = useState([])
   const [isDeletingStudent, setIsDeletingStudent] = useState(null)
+  const [isLoadingStudents, setIsLoadingStudents] = useState(true)
+  const [isLoadingYears, setIsLoadingYears] = useState(true)
 
   const navigate = useNavigate();
 
   const selectedYearId = academicYear.find((item) => item.year_name === year)?.id ?? null
+  const selectedYear = academicYear.find((item) => item.year_name === year) ?? null
+  const isCurrentYearSelected = selectedYear ? (Number(selectedYear.is_current) === 1 || selectedYear.is_current === true) : false
 
-  const handleSearch = async () => {
+  const fetchStudents = useCallback(async () => {
     const params = new URLSearchParams();
 
     if (year) params.append("year", year);
     if (studentClass) params.append("class", studentClass);
-    if (name) params.append("name", name);
+    if (name.trim()) params.append("name", name.trim());
 
+    setIsLoadingStudents(true)
     try{
       const res = await fetch(`http://localhost:8000/student/get?${params.toString()}`)
       const data = await res.json()
@@ -32,7 +36,13 @@ function Students() {
       setStudent(Array.isArray(data.data) ? data.data : []);
     } catch(e) {
       setStudent([]);
+    } finally {
+      setIsLoadingStudents(false)
     }
+  }, [year, studentClass, name])
+
+  const handleSearch = () => {
+    fetchStudents()
   }
 
   const handleDeleteStudent = async (studentId, studentName) => {
@@ -43,7 +53,7 @@ function Students() {
 
     try {
       setIsDeletingStudent(studentId)
-      const res = await fetch(`http://localhost:8000/student${studentId}`, {
+      const res = await fetch(`http://localhost:8000/student/${studentId}`, {
         method: 'DELETE',
       })
 
@@ -54,9 +64,7 @@ function Students() {
 
       setStudent((previous) => previous.filter((item) => item.studentId !== studentId))
 
-      if (year && studentClass) {
-        handleSearch()
-      }
+      fetchStudents()
     } catch (error) {
       window.alert('Failed to delete student')
     } finally {
@@ -66,6 +74,7 @@ function Students() {
 
   useEffect(() => {
     const fetchAcademicYear = async() => {
+      setIsLoadingYears(true)
       try{
         const res = await fetch("http://localhost:8000/academic-year/get")
         const data = await res.json();
@@ -73,13 +82,25 @@ function Students() {
           setAcademicYear([]);
           return
         }
-        setAcademicYear(Array.isArray(data.data) ? data.data : []);
+        const years = Array.isArray(data.data) ? data.data : []
+        setAcademicYear(years);
+
+        const activeYear = years.find((item) => Number(item.is_active) === 1 || item.is_active === true)
+        if (activeYear) {
+          setYear(activeYear.year_name)
+        }
       } catch(e) {
         setAcademicYear([]);
+      } finally {
+        setIsLoadingYears(false)
       }
     }
     fetchAcademicYear();
   }, [])
+
+  useEffect(() => {
+    fetchStudents()
+  }, [fetchStudents])
 
   return (
     <>
@@ -104,6 +125,7 @@ function Students() {
               <select
                 value={year}
                 onChange={(e) => setYear(e.target.value)}
+                disabled={isLoadingYears}
                 className="min-w-40 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm transition focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
               >
                 <option value="">Academic Year</option>
@@ -147,6 +169,11 @@ function Students() {
               </button>
             </div>
           </div>
+          {year && !isCurrentYearSelected && (
+            <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 px-4 py-2 text-sm text-blue-800">
+              Showing data for academic year: <span className="font-semibold">{year}</span>
+            </div>
+          )}
         </section>
 
         <section className="mt-6 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -203,7 +230,18 @@ function Students() {
                   </tr>
                 ))}
 
-                {student.length === 0 && (
+                {isLoadingStudents && (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-500">
+                      <div className="inline-flex items-center gap-2">
+                        <span className="app-spinner" aria-hidden="true" />
+                        Loading students...
+                      </div>
+                    </td>
+                  </tr>
+                )}
+
+                {!isLoadingStudents && student.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-500">
                       No students found. Adjust filters and try again.
@@ -216,7 +254,7 @@ function Students() {
         </section>
       </main>
     </div>
-    <Outlet context={{ year, studentClass, selectedYearId, refreshStudents: handleSearch }} />
+    <Outlet context={{ year, studentClass, selectedYearId, refreshStudents: fetchStudents }} />
     </>
   )
 }

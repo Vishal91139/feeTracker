@@ -10,13 +10,13 @@ const loginAdmin = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'Please provide all required fields');
     }
 
-    const [admin] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    const [admin] = await pool.query('SELECT id, full_name, email, password, role FROM users WHERE email = ?', [email]);
 
     if(!admin || admin.length === 0) {
         throw new ApiError(400, 'Invalid email');
     }
 
-    const user = row[0];
+    const user = admin[0];
 
     if(password !== user.password) {
         throw new ApiError(400, 'Invalid password');
@@ -30,6 +30,14 @@ const loginAdmin = asyncHandler(async (req, res) => {
             new ApiResponse(200, user, 'Login successful')
         );
     
+});
+
+const logoutAdmin = asyncHandler(async (req, res) => {
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, null, 'Logout successful')
+        );
 });
 
 const changePassword = asyncHandler(async (req, res) => {
@@ -61,4 +69,4 @@ const changePassword = asyncHandler(async (req, res) => {
         );
 });
 
-export { loginAdmin, changePassword };
+export { loginAdmin, logoutAdmin, changePassword };

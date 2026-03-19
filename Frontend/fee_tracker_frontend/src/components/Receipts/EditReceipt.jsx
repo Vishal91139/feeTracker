@@ -1,7 +1,27 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 
-const paymentModes = ['Cash', 'Cheque', 'UPI', 'Bank Transfer', 'Card']
+const paymentModes = ['CASH', 'CHEQUE', 'UPI', 'BANK', 'CARD']
+
+const toDateInputValue = (value) => {
+  if (!value) return ''
+
+  const textValue = String(value)
+  const directMatch = textValue.match(/^(\d{4}-\d{2}-\d{2})$/)
+  if (directMatch) {
+    return directMatch[1]
+  }
+
+  const parsed = new Date(textValue)
+  if (Number.isNaN(parsed.getTime())) {
+    return ''
+  }
+
+  const year = parsed.getFullYear()
+  const month = String(parsed.getMonth() + 1).padStart(2, '0')
+  const day = String(parsed.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
 function EditReceipt() {
   const navigate = useNavigate()
@@ -37,7 +57,7 @@ function EditReceipt() {
           setFormData({
             amount: payload.data?.amount ?? '',
             paymentMode: payload.data?.payment_mode ?? '',
-            paymentDate: payload.data?.payment_date ? new Date(payload.data.payment_date).toISOString().split('T')[0] : '',
+            paymentDate: toDateInputValue(payload.data?.payment_date),
             remarks: payload.data?.remarks ?? '',
           })
         }
@@ -94,8 +114,8 @@ function EditReceipt() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
+    <div className="app-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="app-modal-panel w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
         <div className="flex items-start justify-between border-b border-slate-200 bg-linear-to-r from-amber-50 to-orange-50 px-8 py-6">
           <div>
             <h2 className="text-2xl font-semibold text-slate-900">Edit Receipt</h2>
@@ -111,7 +131,12 @@ function EditReceipt() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 px-8 py-8">
-          {loading && <p className="text-sm text-slate-500">Loading receipt details...</p>}
+          {loading && (
+            <div className="flex items-center gap-2 text-sm text-slate-500">
+              <span className="app-spinner" aria-hidden="true" />
+              Loading receipt details...
+            </div>
+          )}
           {!loading && error && <p className="text-sm text-rose-600">{error}</p>}
 
           {!loading && (

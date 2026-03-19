@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const mobileRegex = /^\d{10}$/
+
 function EditStudent() {
   const navigate = useNavigate()
   const { studentId } = useParams()
@@ -66,6 +69,19 @@ function EditStudent() {
   const handleSubmit = async (event) => {
     event.preventDefault()
 
+    const trimmedEmail = String(formData.email ?? '').trim()
+    const trimmedMobile = String(formData.mobile ?? '').trim()
+
+    if (!emailRegex.test(trimmedEmail)) {
+      setError('Enter a valid email address')
+      return
+    }
+
+    if (!mobileRegex.test(trimmedMobile)) {
+      setError('Mobile number must be exactly 10 digits')
+      return
+    }
+
     try {
       setIsSaving(true)
       setError('')
@@ -75,7 +91,11 @@ function EditStudent() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          email: trimmedEmail,
+          mobile: trimmedMobile,
+        }),
       })
 
       const payload = await res.json()
@@ -93,8 +113,8 @@ function EditStudent() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
+    <div className="app-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="app-modal-panel w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
         <div className="flex items-start justify-between border-b border-slate-200 bg-linear-to-r from-amber-50 to-orange-50 px-8 py-6">
           <div>
             <h2 className="text-2xl font-semibold text-slate-900">Edit Student</h2>
@@ -136,9 +156,12 @@ function EditStudent() {
               <label className="flex flex-col gap-2">
                 <span className="text-sm font-medium text-slate-700">Mobile</span>
                 <input
+                  type="tel"
                   name="mobile"
                   value={formData.mobile}
                   onChange={handleChange}
+                  inputMode="numeric"
+                  maxLength={10}
                   className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
                 />
               </label>

@@ -5,21 +5,50 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const addAcademicYear = asyncHandler(async(req, res) => {
     const { year } = req.body;
+    const normalizedYear = String(year ?? "").trim();
 
-    if(!year) {
+    if(!normalizedYear) {
         throw new ApiError(400, "Academic year is required");
     }
 
-    const [row] = await pool.query(`INSERT INTO academic_years(year_name) VALUES(?)`, [year]);
+    const [[existingYear]] = await pool.query(
+        `SELECT id FROM academic_years WHERE LOWER(TRIM(year_name)) = LOWER(TRIM(?)) LIMIT 1`,
+        [normalizedYear]
+    );
 
-    return res.status(201)
-        .json(
-            new ApiResponse(201, row, "Academic year added successfully")
-        )
+    if(existingYear) {
+        throw new ApiError(409, "Academic year already exists");
+    }
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        await connection.query(
+            `UPDATE academic_years SET is_current = 0, is_active = 0`
+        );
+
+        const [row] = await connection.query(
+            `INSERT INTO academic_years(year_name, is_current, is_active) VALUES(?,?,?)`,
+            [normalizedYear, 1, 1]
+        );
+
+        await connection.commit();
+
+        return res.status(201)
+            .json(
+                new ApiResponse(201, row, "Academic year added successfully")
+            )
+    } catch (err) {
+        await connection.rollback();
+        throw err;
+    } finally {
+        connection.release();
+    }
 });
 
 const getAllAcademicYears = asyncHandler(async(req, res) => {
-    const [rows] = await pool.query(`SELECT * FROM academic_years`);
+    const [rows] = await pool.query(`SELECT * FROM academic_years ORDER BY year_name DESC, id DESC`);
 
     if(!rows || rows.length === 0) {
         throw new ApiError(404, "No academic years found");
@@ -61,10 +90,9 @@ const deleteAcademicYearById = asyncHandler(async(req, res) => {
 
 const setActiveYear = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { is_current, is_active } = req.body;
 
-    if(is_current === undefined && is_active === undefined) {
-        throw new ApiError(400, "is_current or is_active is required");
+    if(!id) {
+        throw new ApiError(400, "Academic year id is required");
     }
 
     // Check year exists
@@ -80,41 +108,14 @@ const setActiveYear = asyncHandler(async (req, res) => {
     try {
         await connection.beginTransaction();
 
-        if(is_current === 1) {
-            await connection.query(
-                `UPDATE academic_years SET is_current = 0 WHERE id != ?`, [id]
-            );
-        }
-
-        if(is_active === 1) {
-            await connection.query(
-                `UPDATE academic_years SET is_active = 0 WHERE id != ?`, [id]
-            );
-        }
-
-        // Prevent unsetting if no other year is being set
-        if(is_current === 0) {
-            const [[current]] = await connection.query(
-                `SELECT id FROM academic_years WHERE is_current = 1 AND id != ?`, [id]
-            );
-            if(!current) {
-                throw new ApiError(400, "Cannot unset is_current. Set another year as current first.");
-            }
-        }
-
-        if(is_active === 0) {
-            const [[active]] = await connection.query(
-                `SELECT id FROM academic_years WHERE is_active = 1 AND id != ?`, [id]
-            );
-            if(!active) {
-                throw new ApiError(400, "Cannot unset is_active. Set another year as active first.");
-            }
-        }
-
-        // Update the target row
+        // Keep one global active academic year for search/filter context.
         await connection.query(
-            `UPDATE academic_years SET is_current = ?, is_active = ? WHERE id = ?`,
-            [is_current, is_active, id]
+            `UPDATE academic_years SET is_active = 0 WHERE id != ?`, [id]
+        );
+
+        await connection.query(
+            `UPDATE academic_years SET is_active = ? WHERE id = ?`,
+            [1, id]
         );
 
         await connection.commit();

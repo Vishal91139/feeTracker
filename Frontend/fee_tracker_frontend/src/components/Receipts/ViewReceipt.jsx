@@ -1,6 +1,23 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
+const formatDateForDisplay = (value) => {
+    if (!value) return '-'
+
+    const textValue = String(value)
+    const dateMatch = textValue.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+    if (dateMatch) {
+        return `${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}`
+    }
+
+    const parsed = new Date(textValue)
+    if (Number.isNaN(parsed.getTime())) {
+        return '-'
+    }
+
+    return parsed.toLocaleDateString('en-IN')
+}
+
 function ViewReceipt() {
     const navigate = useNavigate();
 
@@ -49,8 +66,8 @@ function ViewReceipt() {
 
   return (
     <>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                <div className="w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl print:max-w-none print:rounded-none print:shadow-none">
+        <div className="app-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="app-modal-panel w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl print:max-w-none print:rounded-none print:shadow-none">
                         <div className="flex items-center justify-between border-b border-slate-200 bg-linear-to-r from-emerald-50 to-cyan-50 px-8 py-5 print:hidden">
                             <div>
                                 <h2 className="text-2xl font-semibold text-slate-900">Receipt</h2>
@@ -69,7 +86,10 @@ function ViewReceipt() {
                                 <div className="bg-slate-50 px-8 py-8 print:w-full print:mx-0 print:bg-white print:p-0">
                     <h2 className="text-xl font-semibold text-slate-900">Receipt</h2>
                     {loading && (
-                        <p className="mt-2 text-sm text-slate-500">Loading receipt...</p>
+                        <div className="mt-2 inline-flex items-center gap-2 text-sm text-slate-500">
+                            <span className="app-spinner" aria-hidden="true" />
+                            Loading receipt...
+                        </div>
                     )}
                     {!loading && error && (
                         <p className="mt-2 text-sm text-red-600">{error}</p>
@@ -97,7 +117,7 @@ function ViewReceipt() {
                         </div>
                         <div className="rounded-xl bg-white px-5 py-4 shadow">
                         <span className="text-xs uppercase tracking-wide text-slate-400">Payment Date</span>
-                        <p className="mt-1 text-base font-medium text-slate-900">{receipt.payment_date ? new Date(receipt.payment_date).toLocaleDateString('en-IN') : '-'}</p>
+                        <p className="mt-1 text-base font-medium text-slate-900">{formatDateForDisplay(receipt.payment_date)}</p>
                         </div>
                         <div className="rounded-xl bg-white px-5 py-4 shadow md:col-span-2">
                         <span className="text-xs uppercase tracking-wide text-slate-400">Remarks</span>

@@ -1,6 +1,22 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { NavigationBar } from '../NavigationBar/NavigationBar'
+
+const formatDateForDisplay = (value) => {
+  if (!value) return '-'
+
+  const textValue = String(value)
+  const dateMatch = textValue.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (dateMatch) {
+    return `${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}`
+  }
+
+  const parsed = new Date(textValue)
+  if (Number.isNaN(parsed.getTime())) {
+    return '-'
+  }
+  return parsed.toLocaleDateString('en-IN')
+}
 
 function ReceiptsDashboard() {
   const navigate = useNavigate();
@@ -11,9 +27,23 @@ function ReceiptsDashboard() {
   const [studentClass, setStudentClass] = useState('')
   const [receiptNo, setReceiptNo] = useState('')
   const [isDeletingReceipt, setIsDeletingReceipt] = useState(null)
+  const [isLoadingReceipts, setIsLoadingReceipts] = useState(true)
+  const [isLoadingYears, setIsLoadingYears] = useState(true)
 
-  const fetchReceipts = useCallback(async (searchParams) => {
-    const query = searchParams && searchParams.toString() ? `?${searchParams.toString()}` : ''
+  const selectedYear = academicYears.find((item) => item.year_name === year) ?? null
+  const isCurrentYearSelected = selectedYear ? (Number(selectedYear.is_current) === 1 || selectedYear.is_current === true) : false
+
+  const receiptSearchParams = useMemo(() => {
+    const params = new URLSearchParams()
+    if (year) params.append('year', year)
+    if (studentClass) params.append('class', studentClass)
+    if (receiptNo.trim()) params.append('receiptNo', receiptNo.trim())
+    return params
+  }, [year, studentClass, receiptNo])
+
+  const fetchReceipts = useCallback(async () => {
+    const query = receiptSearchParams.toString() ? `?${receiptSearchParams.toString()}` : ''
+    setIsLoadingReceipts(true)
     try {
       const res = await fetch(`http://localhost:8000/receipt${query}`)
       const data = await res.json()
@@ -24,19 +54,17 @@ function ReceiptsDashboard() {
       setReceipts(Array.isArray(data.data) ? data.data : [])
     } catch (err) {
       setReceipts([])
+    } finally {
+      setIsLoadingReceipts(false)
     }
-  },[]);
+  }, [receiptSearchParams]);
 
   useEffect(() => {
     fetchReceipts();
   },[fetchReceipts]);
 
   const handleSearch = async () => {
-    const params = new URLSearchParams()
-    if (year) params.append('year', year)
-    if (studentClass) params.append('class', studentClass)
-    if (receiptNo) params.append('receiptNo', receiptNo)
-    fetchReceipts(params)
+    fetchReceipts()
   }
 
   const handleDeleteReceipt = async (receiptId, receiptNumber) => {
@@ -57,9 +85,7 @@ function ReceiptsDashboard() {
       }
 
       setReceipts((previous) => previous.filter((item) => item.receipt_id !== receiptId))
-      if (year || receiptNo) {
-        handleSearch()
-      }
+      fetchReceipts()
     } catch (error) {
       window.alert('Failed to delete receipt')
     } finally {
@@ -69,6 +95,7 @@ function ReceiptsDashboard() {
 
   useEffect(() => {
     const loadAcademicYears = async () => {
+      setIsLoadingYears(true)
       try {
         const res = await fetch('http://localhost:8000/academic-year/get')
         const data = await res.json()
@@ -76,14 +103,21 @@ function ReceiptsDashboard() {
           setAcademicYears([])
           return
         }
-        setAcademicYears(Array.isArray(data.data) ? data.data : [])
+        const years = Array.isArray(data.data) ? data.data : []
+        setAcademicYears(years)
+
+        const activeYear = years.find((item) => Number(item.is_active) === 1 || item.is_active === true)
+        if (activeYear) {
+          setYear(activeYear.year_name)
+        }
       } catch (err) {
         setAcademicYears([])
+      } finally {
+        setIsLoadingYears(false)
       }
     }
 
     loadAcademicYears()
-    fetchReceipts()
   }, [])
 
   return (
@@ -109,6 +143,7 @@ function ReceiptsDashboard() {
               <select
                 value={year}
                 onChange={(event) => setYear(event.target.value)}
+                disabled={isLoadingYears}
                 className="min-w-40 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm transition focus:border-emerald-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
               >
                 <option value="">Academic Year</option>
@@ -154,6 +189,11 @@ function ReceiptsDashboard() {
               </button>
             </div>
           </div>
+          {year && !isCurrentYearSelected && (
+            <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
+              Showing data for academic year: <span className="font-semibold">{year}</span>
+            </div>
+          )}
         </section>
 
           <section className="mt-6 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -186,7 +226,7 @@ function ReceiptsDashboard() {
                       <td className="px-4 py-3 text-slate-700">{item.year_name ?? '-'}</td>
                       <td className="px-4 py-3 font-medium text-emerald-600">{item.amount ?? '-'}</td>
                       <td className="px-4 py-3 text-slate-700">{item.payment_mode ?? '-'}</td>
-                      <td className="px-4 py-3 text-slate-700">{new Date(item.payment_date).toLocaleDateString("en-IN")}</td>
+                      <td className="px-4 py-3 text-slate-700">{formatDateForDisplay(item.payment_date)}</td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap items-center justify-center gap-2">
                           <button
@@ -216,7 +256,18 @@ function ReceiptsDashboard() {
                     </tr>
                   ))}
 
-                {receipts.length === 0 && (
+                {isLoadingReceipts && (
+                  <tr>
+                    <td colSpan={9} className="px-4 py-10 text-center text-sm text-slate-500">
+                      <div className="inline-flex items-center gap-2">
+                        <span className="app-spinner" aria-hidden="true" />
+                        Loading receipts...
+                      </div>
+                    </td>
+                  </tr>
+                )}
+
+                {!isLoadingReceipts && receipts.length === 0 && (
                   <tr>
                     <td colSpan={9} className="px-4 py-10 text-center text-sm text-slate-500">
                       No receipts found. Adjust filters and try again.
@@ -229,7 +280,7 @@ function ReceiptsDashboard() {
           </section>
       </main>
     </div>
-      <Outlet context={{ refreshReceipts: handleSearch }} />
+      <Outlet context={{ refreshReceipts: fetchReceipts }} />
     </>
   )
 }

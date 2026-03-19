@@ -15,7 +15,7 @@ const enrollStudentToNewAcademic = asyncHandler(async (req, res) => {
 
     const[existing] = await pool.query("SELECT * FROM student_academics WHERE student_id = ? AND academic_year_id = ?", [studentId, yearId]); 
 
-    if(existing || existing.length > 0){
+    if(existing && existing.length > 0){
         throw new ApiError(400, "Student already enrolled to this year");
     }
 
@@ -34,11 +34,22 @@ const getStudentAcademicYears = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Student id is required");
     }
 
-    const[academicyears] = await pool.query("SELECT ay.year_name FROM Students s JOIN student_academics sa ON s.id = sa.student_id JOIN academic_years ay ON sa.academic_year_id = ay.id WHERE s.id = ?", [studentId]);
-
-    if(!academicyears || academicyears.length === 0){
-        throw new ApiError(400, "No academic years found");
-    }
+    const [academicyears] = await pool.query(
+        `SELECT
+            ay.id AS year_id,
+            ay.year_name,
+            ay.is_current,
+            ay.is_active,
+            sa.class,
+            sa.total_fee,
+            sa.paid_amount,
+            sa.due_amount
+        FROM student_academics sa
+        JOIN academic_years ay ON sa.academic_year_id = ay.id
+        WHERE sa.student_id = ?
+        ORDER BY ay.year_name DESC, ay.id DESC`,
+        [studentId]
+    );
 
     return res.status(200)
         .json(

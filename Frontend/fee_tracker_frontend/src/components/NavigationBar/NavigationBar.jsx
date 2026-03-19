@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
 const NavItem = ({ to, icon, label, onClick }) => (
   <NavLink
@@ -22,6 +22,7 @@ const NavItem = ({ to, icon, label, onClick }) => (
 export const NavigationBar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
 
   useEffect(() => {
     setIsMobileOpen(false)
@@ -85,23 +86,23 @@ export const NavigationBar = () => {
         />
 
         <NavItem
-          to="/students"
-          label="Students"
-          onClick={closeDrawer}
-          icon={
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          }
-        />
-
-        <NavItem
           to="/academic-year"
           label="Academic Year"
           onClick={closeDrawer}
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          }
+        />
+
+        <NavItem
+          to="/students"
+          label="Students"
+          onClick={closeDrawer}
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
           }
         />
@@ -128,6 +129,17 @@ export const NavigationBar = () => {
             <p className="truncate text-xs text-slate-500">Administrator</p>
           </div>
         </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            closeDrawer()
+            navigate('/logout')
+          }}
+          className="mt-3 w-full rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
+        >
+          Logout
+        </button>
       </div>
       </aside>
     </>

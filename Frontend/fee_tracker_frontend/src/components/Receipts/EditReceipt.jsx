@@ -116,47 +116,47 @@ function EditReceipt() {
   return (
     <div className="app-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="app-modal-panel w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
-        <div className="flex items-start justify-between border-b border-slate-200 bg-linear-to-r from-amber-50 to-orange-50 px-8 py-6">
+        <div className="flex flex-col gap-1 sm:gap-3 sm:flex-row sm:items-start sm:justify-between border-b border-slate-200 bg-linear-to-r from-amber-50 to-orange-50 px-3 sm:px-8 py-2 sm:py-6">
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">Edit Receipt</h2>
-            <p className="mt-1 text-sm text-slate-500">Update the receipt payment information.</p>
+            <h2 className="text-lg sm:text-2xl font-semibold text-slate-900">Edit Receipt</h2>
+            <p className="hidden sm:block mt-1 text-xs sm:text-sm text-slate-500">Update the receipt payment information.</p>
           </div>
           <button
             type="button"
             onClick={() => navigate('/receipts', { replace: true })}
-            className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:bg-slate-100"
+            className="rounded-xl bg-white px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-slate-600 shadow-sm transition hover:bg-slate-100 whitespace-nowrap"
           >
             Close
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 px-8 py-8">
+        <form onSubmit={handleSubmit} className="space-y-4 px-3 sm:px-8 py-4 sm:py-8">
           {loading && (
-            <div className="flex items-center gap-2 text-sm text-slate-500">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500">
               <span className="app-spinner" aria-hidden="true" />
               Loading receipt details...
             </div>
           )}
-          {!loading && error && <p className="text-sm text-rose-600">{error}</p>}
+          {!loading && error && <p className="text-xs sm:text-sm text-rose-600">{error}</p>}
 
           {!loading && (
-            <div className="grid gap-5 md:grid-cols-2">
-              <label className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-slate-700">Amount</span>
+            <div className="grid gap-2 sm:gap-5 md:grid-cols-2">
+              <label className="flex flex-col gap-1 sm:gap-2">
+                <span className="text-xs sm:text-sm font-medium text-slate-700">Amount</span>
                 <input
                   name="amount"
                   value={formData.amount}
                   onChange={handleChange}
-                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
                 />
               </label>
-              <label className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-slate-700">Payment Mode</span>
+              <label className="flex flex-col gap-1 sm:gap-2">
+                <span className="text-xs sm:text-sm font-medium text-slate-700">Payment Mode</span>
                 <select
                   name="paymentMode"
                   value={formData.paymentMode}
                   onChange={handleChange}
-                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
                 >
                   <option value="">Select mode</option>
                   {paymentModes.map((mode) => (
@@ -166,34 +166,34 @@ function EditReceipt() {
                   ))}
                 </select>
               </label>
-              <label className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-slate-700">Payment Date</span>
+              <label className="flex flex-col gap-1 sm:gap-2">
+                <span className="text-xs sm:text-sm font-medium text-slate-700">Payment Date</span>
                 <input
                   type="date"
                   name="paymentDate"
                   value={formData.paymentDate}
                   onChange={handleChange}
-                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
                 />
               </label>
-              <label className="flex flex-col gap-2 md:col-span-2">
-                <span className="text-sm font-medium text-slate-700">Remarks</span>
+              <label className="flex flex-col gap-1 sm:gap-2 md:col-span-2">
+                <span className="text-xs sm:text-sm font-medium text-slate-700">Remarks</span>
                 <textarea
-                  rows={4}
+                  rows={3}
                   name="remarks"
                   value={formData.remarks}
                   onChange={handleChange}
-                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
                 />
               </label>
             </div>
           )}
 
-          <div className="flex justify-end gap-3">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
             <button
               type="button"
               onClick={() => navigate(`/receipts/${receiptId}`, { replace: true })}
-              className="rounded-xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+              className="rounded-xl bg-slate-100 px-3 sm:px-5 py-1.5 sm:py-3 text-xs sm:text-sm font-semibold text-slate-700 transition hover:bg-slate-200 w-full sm:w-auto"
             >
               Cancel
             </button>

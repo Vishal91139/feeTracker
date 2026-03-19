@@ -97,3 +97,109 @@ button {
 		transform: translateY(0) scale(1);
 	}
 }
+
+/* Mobile-first responsive utilities */
+@media (max-width: 640px) {
+	/* Enhanced touch targets on mobile */
+	button, input, select, textarea {
+		min-height: 44px;
+		min-width: 44px;
+	}
+
+	/* Better text sizing for mobile */
+	body {
+		font-size: 16px; /* Prevents zoom on iOS */
+	}
+
+	/* Optimize modals for mobile */
+	.app-modal-panel {
+		border-radius: 0; /* Full-width modals on small screens */
+		max-height: 95vh;
+		width: 100%;
+	}
+
+	.app-modal-backdrop {
+		padding: 0;
+	}
+
+	/* Better spacing for mobile forms */
+	input[type="text"],
+	input[type="email"],
+	input[type="tel"],
+	input[type="date"],
+	input[type="number"],
+	select,
+	textarea {
+		font-size: 16px; /* Prevents zoom on iPhone */
+		border-radius: 8px;
+	}
+
+	/* Card-based layout improvements */
+	.grid {
+		gap: 12px;
+	}
+
+	.space-y-3 > * + * {
+		margin-top: 12px;
+	}
+
+	.space-y-4 > * + * {
+		margin-top: 16px;
+	}
+
+	/* Better table handling - hide extra columns */
+	table th:nth-child(n+5),
+	table td:nth-child(n+5) {
+		display: none;
+	}
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+	/* Tablet optimizations */
+	.app-modal-panel {
+		border-radius: 12px;
+		max-height: 92vh;
+	}
+
+	/* Optimize typography for tablets */
+	h1 {
+		font-size: 1.875rem;
+	}
+
+	h2 {
+		font-size: 1.5rem;
+	}
+
+	h3 {
+		font-size: 1.25rem;
+	}
+
+	/* Better spacing for tablet */
+	.px-6 {
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+
+	.py-6 {
+		padding-top: 1rem;
+		padding-bottom: 1rem;
+	}
+}
+
+/* Print styles */
+@media print {
+	.app-modal-backdrop,
+	button:not(.print),
+	.no-print {
+		display: none !important;
+	}
+
+	body {
+		background: white;
+	}
+
+	.app-modal-panel {
+		box-shadow: none;
+		border: none;
+	}
+}

@@ -181,8 +181,8 @@ const getReceipts = asyncHandler(async (req, res) => {
     }
 
     if (receiptNo) {
-        query += " AND r.receipt_number = ?";
-        params.push(receiptNo);
+        query += " AND r.receipt_number LIKE ?";
+        params.push(`%${String(receiptNo).trim()}%`);
     }
 
     query += " ORDER BY r.payment_date DESC";

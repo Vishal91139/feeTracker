@@ -63,10 +63,6 @@ function ReceiptsDashboard() {
     fetchReceipts();
   },[fetchReceipts]);
 
-  const handleSearch = async () => {
-    fetchReceipts()
-  }
-
   const handleDeleteReceipt = async (receiptId, receiptNumber) => {
     const confirmed = window.confirm(`Delete receipt ${receiptNumber ?? ''}? This cannot be undone.`)
     if (!confirmed) {
@@ -124,159 +120,197 @@ function ReceiptsDashboard() {
     <>
     <div className="flex h-screen overflow-hidden bg-slate-50">
       <NavigationBar />
-      <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-6 pt-20 md:p-8 md:pt-8">
-        <header className="mb-6 rounded-2xl border border-emerald-100 bg-linear-to-r from-emerald-50 to-cyan-50 px-6 py-5 shadow-sm">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 sm:p-6 pt-20 md:p-8 md:pt-8">
+        <header className="mb-2 sm:mb-6 rounded-lg sm:rounded-2xl border border-emerald-100 bg-linear-to-r from-emerald-50 to-cyan-50 px-3 sm:px-6 py-2 sm:py-5 shadow-sm">
+          <div className="flex flex-col gap-1 sm:gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-2xl font-semibold text-slate-800">Receipts</h2>
-              <p className="mt-1 text-sm text-slate-500">Track payment history and open receipt details.</p>
+              <h2 className="text-xl sm:text-2xl font-semibold text-slate-800">Receipts</h2>
+              <p className="hidden sm:block mt-1 text-sm text-slate-500">Track payment history</p>
             </div>
-            <div className="rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-emerald-700 shadow-sm">
-              {receipts.length} receipts
+            <div className="rounded-full bg-white/80 px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium text-emerald-700 shadow-sm">
+              {receipts.length}
             </div>
           </div>
         </header>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex flex-wrap items-center gap-4 flex-1">
-              <select
-                value={year}
-                onChange={(event) => setYear(event.target.value)}
-                disabled={isLoadingYears}
-                className="min-w-40 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm transition focus:border-emerald-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
-              >
-                <option value="">Academic Year</option>
-                {academicYears.map((item) => (
-                  <option key={item.year_id ?? item.year_name} value={item.year_name}>
-                    {item.year_name}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={studentClass}
-                onChange={(event) => setStudentClass(event.target.value)}
-                className="min-w-32 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm transition focus:border-emerald-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
-              >
-                <option value="">Class</option>
-                <option value="7th">7th</option>
-                <option value="8th">8th</option>
-                <option value="9th">9th</option>
-                <option value="10th">10th</option>
-                <option value="11th">11th</option>
-                <option value="12th">12th</option>
-              </select>
-              <input
-                type="text"
-                value={receiptNo}
-                onChange={(event) => setReceiptNo(event.target.value)}
-                placeholder="Enter Receipt number"
-                className="w-64 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm transition focus:border-emerald-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
-              />
+        <section className="rounded-lg sm:rounded-2xl border border-slate-200 bg-white p-3 sm:p-4 shadow-sm">
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xl sm:text-xl font-semibold text-slate-700">Filters</p>
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                onClick={handleSearch}
-                className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.99]"
-              >
-                Search
-              </button>
-              <button
-                onClick={() => navigate("/receipts/create")}
-                className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.99]"
-              >
-                + Create
-              </button>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[180px_160px_220px_auto] items-end gap-2.5 sm:gap-3">
+              <label className="flex flex-col gap-1">
+                <span className="text-[11px] sm:text-xs font-medium text-slate-600">Year</span>
+                <select
+                  value={year}
+                  onChange={(event) => setYear(event.target.value)}
+                  disabled={isLoadingYears}
+                  className="h-8 sm:h-9 w-full lg:w-45 rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-sm lg:text-base text-slate-700 shadow-sm transition focus:border-emerald-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                >
+                  <option value="">All years</option>
+                  {academicYears.map((item) => (
+                    <option key={item.year_id ?? item.year_name} value={item.year_name}>
+                      {item.year_name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="flex flex-col gap-1">
+                <span className="text-[11px] sm:text-xs font-medium text-slate-600">Class</span>
+                <select
+                  value={studentClass}
+                  onChange={(event) => setStudentClass(event.target.value)}
+                  className="h-8 sm:h-9 w-full lg:w-40 rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-sm lg:text-base text-slate-700 shadow-sm transition focus:border-emerald-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                >
+                  <option value="">All classes</option>
+                  <option value="7th">7th</option>
+                  <option value="8th">8th</option>
+                  <option value="9th">9th</option>
+                  <option value="10th">10th</option>
+                  <option value="11th">11th</option>
+                  <option value="12th">12th</option>
+                </select>
+              </label>
+
+              <label className="flex flex-col gap-1">
+                <span className="text-[11px] sm:text-xs font-medium text-slate-600">Receipt Number</span>
+                <input
+                  type="text"
+                  value={receiptNo}
+                  onChange={(event) => setReceiptNo(event.target.value)}
+                  placeholder="e.g. RCPT-"
+                  className="h-8 sm:h-9 w-full lg:w-55 rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-sm lg:text-base text-slate-700 shadow-sm transition focus:border-emerald-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                />
+              </label>
+
+              <div className="sm:col-span-2 lg:col-span-1 flex justify-end">
+                <button
+                  onClick={() => navigate("/receipts/create")}
+                  className="h-8 sm:h-9 rounded-lg border border-blue-300 bg-blue-600 px-3 sm:px-4 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+                >
+                  + New
+                </button>
+              </div>
             </div>
           </div>
           {year && !isCurrentYearSelected && (
-            <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
-              Showing data for academic year: <span className="font-semibold">{year}</span>
+            <div className="mt-1 sm:mt-3 rounded-lg sm:rounded-xl border border-emerald-100 bg-emerald-50 px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm text-emerald-800">
+              <span className="font-semibold">{year}</span>
             </div>
           )}
         </section>
 
-          <section className="mt-6 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="border-b border-slate-100 px-6 py-4">
-              <h3 className="text-lg font-semibold text-slate-800">Receipt List</h3>
-            </div>
-            <div className="min-h-0 flex-1 overflow-auto">
-              <table className="min-w-full table-fixed">
-              <thead className="bg-slate-50">
+          <section className="mt-3 sm:mt-5 rounded-lg sm:rounded-2xl border border-slate-200 bg-white shadow-sm">
+            
+            {/* Desktop Table View */}
+            <div className="hidden md:block max-h-[56vh] overflow-auto">
+              <table className="min-w-full table-auto">
+              <thead className="bg-slate-50 sticky top-0">
                 <tr>
-                  <th className="w-16 px-4 py-3 text-center text-sm font-semibold text-slate-600">S.No</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Receipt Number</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Name</th>
-                  <th className="w-20 px-4 py-3 text-center text-sm font-semibold text-slate-600">Class</th>
-                  <th className="w-32 px-4 py-3 text-center text-sm font-semibold text-slate-600">Academic Year</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-slate-600">Payment</th>
-                  <th className="w-34 px-4 py-3 text-center text-sm font-semibold text-slate-600">Payment Mode</th>
-                  <th className="w-32 px-4 py-3 text-center text-sm font-semibold text-slate-600">Payment Date</th>
-                  <th className="w-52 px-4 py-3 text-center text-sm font-semibold text-slate-600">Actions</th>
+                  <th className="w-12 px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">S.No</th>
+                  <th className="px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Receipt #</th>
+                  <th className="px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Student</th>
+                  <th className="w-16 px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Class</th>
+                  <th className="px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Year</th>
+                  <th className="px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Amount</th>
+                  <th className="px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Mode</th>
+                  <th className="px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Date</th>
+                  <th className="w-32 px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 text-center">
+              <tbody className="divide-y divide-gray-200">
                 {receipts.length > 0 &&
                   receipts.map((item, index) => (
                     <tr key={item.receipt_id ?? item.receipt_number ?? index} className="odd:bg-white even:bg-slate-50/60 transition hover:bg-emerald-50">
-                      <td className="px-4 py-3 text-slate-900">{index + 1}</td>
-                      <td className="px-4 py-3 text-slate-900">{item.receipt_number ?? '-'}</td>
-                      <td className="px-4 py-3 text-slate-700">{item.full_name ?? '-'}</td>
-                      <td className="px-4 py-3 text-slate-700">{item.class ?? '-'}</td>
-                      <td className="px-4 py-3 text-slate-700">{item.year_name ?? '-'}</td>
-                      <td className="px-4 py-3 font-medium text-emerald-600">{item.amount ?? '-'}</td>
-                      <td className="px-4 py-3 text-slate-700">{item.payment_mode ?? '-'}</td>
-                      <td className="px-4 py-3 text-slate-700">{formatDateForDisplay(item.payment_date)}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-wrap items-center justify-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/receipts/${item.receipt_id}`)}
-                            className="rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
-                          >
+                      <td className="px-3 py-2.5 text-center text-sm lg:text-base text-slate-900 align-middle">{index + 1}</td>
+                      <td className="px-3 py-2.5 text-center text-sm lg:text-base text-slate-900 align-middle">{item.receipt_number ?? '-'}</td>
+                      <td className="px-3 py-2.5 text-center text-sm lg:text-base text-slate-700 align-middle">{item.full_name ?? '-'}</td>
+                      <td className="px-3 py-2.5 text-center text-sm lg:text-base text-slate-700 align-middle">{item.class ?? '-'}</td>
+                      <td className="px-3 py-2.5 text-center text-sm lg:text-base text-slate-700 align-middle">{item.year_name ?? '-'}</td>
+                      <td className="px-3 py-2.5 text-center text-sm lg:text-base font-medium text-emerald-600 align-middle">{item.amount ?? '-'}</td>
+                      <td className="px-3 py-2.5 text-center text-sm lg:text-base text-slate-700 align-middle">{item.payment_mode ?? '-'}</td>
+                      <td className="px-3 py-2.5 text-center text-sm lg:text-base text-slate-700 align-middle">{formatDateForDisplay(item.payment_date)}</td>
+                      <td className="px-3 py-3">
+                        <div className="flex flex-wrap items-center justify-center gap-1">
+                          <button type="button" onClick={() => navigate(`/receipts/${item.receipt_id}`)} className="inline-flex items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700 transition hover:bg-blue-100">
                             View
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/receipts/${item.receipt_id}/edit`)}
-                            className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 transition hover:bg-amber-100"
-                          >
+                          <button type="button" onClick={() => navigate(`/receipts/${item.receipt_id}/edit`)} className="inline-flex items-center justify-center rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 transition hover:bg-amber-100">
                             Edit
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteReceipt(item.receipt_id, item.receipt_number)}
-                            disabled={isDeletingReceipt === item.receipt_id}
-                            className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            {isDeletingReceipt === item.receipt_id ? 'Deleting...' : 'Delete'}
+                          <button type="button" onClick={() => handleDeleteReceipt(item.receipt_id, item.receipt_number)} disabled={isDeletingReceipt === item.receipt_id} className="inline-flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 px-2 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-60">
+                            Del
                           </button>
                         </div>
                       </td>
                     </tr>
                   ))}
-
-                {isLoadingReceipts && (
-                  <tr>
-                    <td colSpan={9} className="px-4 py-10 text-center text-sm text-slate-500">
-                      <div className="inline-flex items-center gap-2">
-                        <span className="app-spinner" aria-hidden="true" />
-                        Loading receipts...
-                      </div>
-                    </td>
-                  </tr>
-                )}
-
-                {!isLoadingReceipts && receipts.length === 0 && (
-                  <tr>
-                    <td colSpan={9} className="px-4 py-10 text-center text-sm text-slate-500">
-                      No receipts found. Adjust filters and try again.
-                    </td>
-                  </tr>
-                )}
               </tbody>
               </table>
             </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden max-h-[56vh] overflow-y-auto">
+              <div className="space-y-3 p-4">
+                {isLoadingReceipts && (
+                  <div className="flex items-center justify-center py-8 text-slate-500">
+                    <span className="app-spinner mr-2" />
+                    Loading receipts...
+                  </div>
+                )}
+
+                {!isLoadingReceipts && receipts.length === 0 && (
+                  <div className="text-center py-8 text-slate-500 text-sm">
+                    No receipts found. Adjust filters and try again.
+                  </div>
+                )}
+
+                {receipts.length > 0 && receipts.map((item, index) => (
+                  <div key={item.receipt_id ?? item.receipt_number ?? index} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-slate-500">Receipt #{item.receipt_number ?? '-'}</p>
+                        <p className="text-sm font-semibold text-slate-800 truncate">{item.full_name ?? '-'}</p>
+                        <p className="text-xs text-slate-600">{item.class ?? '-'} • {item.year_name ?? '-'}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-semibold text-emerald-600">₹{item.amount ?? '-'}</p>
+                        <p className="text-xs text-slate-500">{item.payment_mode ?? '-'}</p>
+                        <p className="text-xs text-slate-500">{formatDateForDisplay(item.payment_date)}</p>
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
+                      <button type="button" onClick={() => navigate(`/receipts/${item.receipt_id}`)} className="flex-1 rounded-md border border-blue-200 bg-blue-50 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100">
+                        View
+                      </button>
+                      <button type="button" onClick={() => navigate(`/receipts/${item.receipt_id}/edit`)} className="flex-1 rounded-md border border-amber-200 bg-amber-50 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-100">
+                        Edit
+                      </button>
+                      <button type="button" onClick={() => handleDeleteReceipt(item.receipt_id, item.receipt_number)} disabled={isDeletingReceipt === item.receipt_id} className="flex-1 rounded-md border border-rose-200 bg-rose-50 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-60">
+                        {isDeletingReceipt === item.receipt_id ? '...' : 'Delete'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Shared Loading/Empty for both views */}
+            {isLoadingReceipts && (
+              <div className="hidden md:flex items-center justify-center py-10 text-sm text-slate-500">
+                <span className="app-spinner mr-2" />
+                Loading receipts...
+              </div>
+            )}
+            {!isLoadingReceipts && receipts.length === 0 && (
+              <div className="hidden md:flex items-center justify-center py-10 text-sm text-slate-500">
+                No receipts found. Adjust filters and try again.
+              </div>
+            )}
           </section>
       </main>
     </div>

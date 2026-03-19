@@ -13,7 +13,7 @@ function AcademicYear() {
   const fetchAcademicYears = useCallback(async () => {
     setIsLoadingYears(true)
     try {
-      const res = await fetch('http://localhost:8000/academic-year/get')
+      const res = await fetch(`${process.env.API_URL}/academic-year/get`)
       const data = await res.json()
       if (!res.ok) {
         setAcademicYear([])
@@ -43,7 +43,7 @@ function AcademicYear() {
   const handleSetActiveYear = async (yearId) => {
     try {
       setIsUpdatingYearId(yearId)
-      const response = await fetch(`http://localhost:8000/academic-year/set-active/${yearId}`, {
+      const response = await fetch(`${process.env.API_URL}/academic-year/set-active/${yearId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ function AcademicYear() {
 
     try {
       setIsDeletingYearId(year.id)
-      const response = await fetch(`http://localhost:8000/academic-year/delete/${year.id}`, {
+      const response = await fetch(`${process.env.API_URL}/academic-year/delete/${year.id}`, {
         method: 'DELETE',
       })
 

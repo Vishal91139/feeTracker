@@ -26,7 +26,7 @@ function Login() {
       setError('')
       setIsSubmitting(true)
 
-      const response = await fetch('http://localhost:8000/admin/login', {
+      const response = await fetch(`${process.env.API_URL}/admin/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

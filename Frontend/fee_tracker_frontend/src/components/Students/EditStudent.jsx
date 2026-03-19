@@ -28,7 +28,7 @@ function EditStudent() {
 
       try {
         const query = selectedYearId ? `?yearId=${selectedYearId}` : ''
-        const res = await fetch(`http://localhost:8000/student/${studentId}${query}`)
+        const res = await fetch(`${process.env.API_URL}/student/${studentId}${query}`)
         const payload = await res.json()
 
         if (!res.ok) {
@@ -86,7 +86,7 @@ function EditStudent() {
       setIsSaving(true)
       setError('')
 
-      const res = await fetch(`http://localhost:8000/student/${studentId}`, {
+      const res = await fetch(`${process.env.API_URL}/student/${studentId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

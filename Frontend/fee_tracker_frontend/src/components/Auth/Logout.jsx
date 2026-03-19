@@ -10,7 +10,7 @@ function Logout() {
       clearStoredAdmin()
 
       try {
-        await fetch('http://localhost:8000/admin/logout', {
+        await fetch(`${process.env.API_URL}/admin/logout`, {
           method: 'POST'
         })
       } catch {

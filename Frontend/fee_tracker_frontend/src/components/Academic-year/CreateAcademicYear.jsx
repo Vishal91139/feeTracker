@@ -33,7 +33,7 @@ function CreateAcademicYear() {
 
     try {
       setIsCreating(true)
-      const response = await fetch('http://localhost:8000/academic-year/create', {
+      const response = await fetch(`${process.env.API_URL}/academic-year/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -50,7 +50,7 @@ function CreateReceipt() {
         remarks: formData.remarks,
       };
 
-      const res = await fetch("http://localhost:8000/receipt/create", {
+      const res = await fetch(`${process.env.API_URL}/receipt/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -79,7 +79,7 @@ function CreateReceipt() {
     const loadAcademicYears = async () => {
       setIsYearLoading(true)
       try {
-        const response = await fetch('http://localhost:8000/academic-year/get')
+        const response = await fetch(`${process.env.API_URL}/academic-year/get`)
         if (!response.ok) {
           setAcademicYears([])
           return
@@ -125,7 +125,7 @@ function CreateReceipt() {
           year: selectedYear.year_name,
           class: formData.studentClass,
         })
-        const response = await fetch(`http://localhost:8000/student/get?${query.toString()}`)
+        const response = await fetch(`${process.env.API_URL}/student/get?${query.toString()}`)
         if (!response.ok) {
           if (!ignore) setStudents([])
           return

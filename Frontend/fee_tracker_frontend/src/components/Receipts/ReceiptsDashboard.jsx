@@ -45,7 +45,7 @@ function ReceiptsDashboard() {
     const query = receiptSearchParams.toString() ? `?${receiptSearchParams.toString()}` : ''
     setIsLoadingReceipts(true)
     try {
-      const res = await fetch(`http://localhost:8000/receipt${query}`)
+      const res = await fetch(`${process.env.API_URL}/receipt${query}`)
       const data = await res.json()
       if (!res.ok) {
         setReceipts([])
@@ -71,7 +71,7 @@ function ReceiptsDashboard() {
 
     try {
       setIsDeletingReceipt(receiptId)
-      const res = await fetch(`http://localhost:8000/receipt/${receiptId}`, {
+      const res = await fetch(`${process.env.API_URL}/receipt/${receiptId}`, {
         method: 'DELETE',
       })
 
@@ -93,7 +93,7 @@ function ReceiptsDashboard() {
     const loadAcademicYears = async () => {
       setIsLoadingYears(true)
       try {
-        const res = await fetch('http://localhost:8000/academic-year/get')
+        const res = await fetch(`${process.env.API_URL}/academic-year/get`)
         const data = await res.json()
         if (!res.ok) {
           setAcademicYears([])

@@ -46,7 +46,7 @@ function EditReceipt() {
       setError('')
 
       try {
-        const res = await fetch(`http://localhost:8000/receipt/${receiptId}`)
+        const res = await fetch(`${process.env.API_URL}/receipt/${receiptId}`)
         const payload = await res.json()
 
         if (!res.ok) {
@@ -91,7 +91,7 @@ function EditReceipt() {
       setIsSaving(true)
       setError('')
 
-      const res = await fetch(`http://localhost:8000/receipt/${receiptId}`, {
+      const res = await fetch(`${process.env.API_URL}/receipt/${receiptId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

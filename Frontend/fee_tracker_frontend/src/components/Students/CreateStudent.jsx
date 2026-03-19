@@ -46,7 +46,7 @@ function CreateStudent() {
                 totalFee: formData.totalAmount
             }
 
-            const res = await fetch("http://localhost:8000/student/create", {
+            const res = await fetch(`${process.env.API_URL}/student/create`, {
                 method: "POST",
                 headers: {
                 "Content-Type": "application/json"

@@ -27,7 +27,7 @@ function Students() {
 
     setIsLoadingStudents(true)
     try{
-      const res = await fetch(`http://localhost:8000/student/get?${params.toString()}`)
+      const res = await fetch(`${process.env.API_URL}/student/get?${params.toString()}`)
       const data = await res.json()
       if(!res.ok) {
         setStudent([])
@@ -49,7 +49,7 @@ function Students() {
 
     try {
       setIsDeletingStudent(studentId)
-      const res = await fetch(`http://localhost:8000/student/${studentId}`, {
+      const res = await fetch(`${process.env.API_URL}/student/${studentId}`, {
         method: 'DELETE',
       })
 
@@ -72,7 +72,7 @@ function Students() {
     const fetchAcademicYear = async() => {
       setIsLoadingYears(true)
       try{
-        const res = await fetch("http://localhost:8000/academic-year/get")
+        const res = await fetch(`${process.env.API_URL}/academic-year/get`)
         const data = await res.json();
         if(!res.ok) {
           setAcademicYear([]);

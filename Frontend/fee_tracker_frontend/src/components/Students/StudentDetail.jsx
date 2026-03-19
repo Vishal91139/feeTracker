@@ -53,7 +53,7 @@ function StudentDetail() {
 
     const loadAcademicHistory = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/student-academics/student/${studentId}`)
+        const response = await fetch(`${process.env.API_URL}/student-academics/student/${studentId}`)
         const payload = await parseJsonSafely(response)
 
         if (!response.ok) {
@@ -104,9 +104,9 @@ function StudentDetail() {
       try {
         const targetYearId = selectedHistoryYearId || selectedYearId
         const query = targetYearId ? `?yearId=${targetYearId}` : ''
-        const studentPromise = fetch(`http://localhost:8000/student/${studentId}${query}`)
+        const studentPromise = fetch(`${process.env.API_URL}/student/${studentId}${query}`)
         const receiptsPromise = selectedHistory?.year_name && selectedHistory?.class
-          ? fetch(`http://localhost:8000/student/${studentId}/receipts?class=${encodeURIComponent(selectedHistory.class)}&year=${encodeURIComponent(selectedHistory.year_name)}`)
+          ? fetch(`${process.env.API_URL}/student/${studentId}/receipts?class=${encodeURIComponent(selectedHistory.class)}&year=${encodeURIComponent(selectedHistory.year_name)}`)
           : Promise.resolve(null)
 
         const [studentRes, receiptsRes] = await Promise.all([studentPromise, receiptsPromise])
@@ -172,7 +172,7 @@ function StudentDetail() {
 
     try {
       setIsDeleting(true)
-      const res = await fetch(`http://localhost:8000/student/${studentId}`, {
+      const res = await fetch(`${process.env.API_URL}/student/${studentId}`, {
         method: 'DELETE',
       })
 

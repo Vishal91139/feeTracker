@@ -34,7 +34,7 @@ function ViewReceipt() {
                 return
             }
             try {
-                const res = await fetch(`http://localhost:8000/receipt/${receiptId}`)
+                const res = await fetch(`${process.env.API_URL}/receipt/${receiptId}`)
                 const data = await res.json()
                 if (!res.ok) {
                     setError(data?.message || 'Failed to fetch receipt')

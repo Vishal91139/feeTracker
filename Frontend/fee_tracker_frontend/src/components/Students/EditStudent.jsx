@@ -113,12 +113,12 @@ function EditStudent() {
   }
 
   return (
-    <div className="app-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="app-modal-panel w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
-        <div className="flex flex-col gap-1 sm:gap-3 sm:flex-row sm:items-start sm:justify-between border-b border-slate-200 bg-linear-to-r from-amber-50 to-orange-50 px-3 sm:px-8 py-2 sm:py-6">
+    <div className="app-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="app-modal-panel w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl sm:rounded-3xl">
+        <div className="flex flex-col gap-2 border-b border-slate-200 bg-linear-to-br from-amber-50 via-orange-50 to-white px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-8 sm:py-6">
           <div>
-            <h2 className="text-lg sm:text-2xl font-semibold text-slate-900">Edit Student</h2>
-            <p className="hidden sm:block mt-1 text-xs sm:text-sm text-slate-500">Update basic student information.</p>
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Edit Student</h2>
+            <p className="mt-1 text-sm text-slate-500">Update basic student information.</p>
           </div>
           <button
             type="button"
@@ -129,19 +129,19 @@ function EditStudent() {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 px-3 sm:px-8 py-4 sm:py-8">
+        <form onSubmit={handleSubmit} className="space-y-4 px-4 py-5 sm:px-8 sm:py-8">
           {loading && <p className="text-xs sm:text-sm text-slate-500">Loading student details...</p>}
           {!loading && error && <p className="text-xs sm:text-sm text-rose-600">{error}</p>}
 
           {!loading && (
-            <div className="grid gap-2 sm:gap-5 md:grid-cols-2">
+            <div className="grid gap-3 sm:gap-5 md:grid-cols-2">
               <label className="flex flex-col gap-1 sm:gap-2 md:col-span-2">
                 <span className="text-xs sm:text-sm font-medium text-slate-700">Student Name</span>
                 <input
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
+                  className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
                 />
               </label>
               <label className="flex flex-col gap-1 sm:gap-2">
@@ -150,7 +150,7 @@ function EditStudent() {
                   name="parentName"
                   value={formData.parentName}
                   onChange={handleChange}
-                  className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
+                  className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
                 />
               </label>
               <label className="flex flex-col gap-1 sm:gap-2">
@@ -162,7 +162,7 @@ function EditStudent() {
                   onChange={handleChange}
                   inputMode="numeric"
                   maxLength={10}
-                  className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
+                  className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
                 />
               </label>
               <label className="flex flex-col gap-1 sm:gap-2 md:col-span-2">
@@ -171,7 +171,7 @@ function EditStudent() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
+                  className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 shadow-sm focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
                 />
               </label>
             </div>
@@ -188,7 +188,7 @@ function EditStudent() {
             <button
               type="submit"
               disabled={loading || isSaving}
-              className="rounded-xl bg-amber-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-11 rounded-xl bg-amber-600 px-5 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSaving ? 'Saving...' : 'Save Changes'}
             </button>

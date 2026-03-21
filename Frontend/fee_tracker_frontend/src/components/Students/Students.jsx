@@ -5,6 +5,7 @@ import { NavigationBar } from '../NavigationBar/NavigationBar'
 function Students() {
   const [year, setYear] = useState("")
   const [studentClass, setStudentClass] = useState("")
+  const [feeStatus, setFeeStatus] = useState("")
   const [academicYear, setAcademicYear] = useState([])
   const [name, setName] = useState("")
   const [student, setStudent] = useState([])
@@ -23,6 +24,7 @@ function Students() {
 
     if (year) params.append("year", year);
     if (studentClass) params.append("class", studentClass);
+    if (feeStatus) params.append("feeStatus", feeStatus);
     if (name.trim()) params.append("name", name.trim());
 
     setIsLoadingStudents(true)
@@ -39,7 +41,7 @@ function Students() {
     } finally {
       setIsLoadingStudents(false)
     }
-  }, [year, studentClass, name])
+  }, [year, studentClass, feeStatus, name])
 
   const handleDeleteStudent = async (studentId, studentName) => {
     const confirmed = window.confirm(`Delete ${studentName}? This cannot be undone.`)
@@ -100,37 +102,37 @@ function Students() {
 
   return (
     <>
-    <div className="flex h-screen overflow-hidden bg-slate-50">
+    <div className="flex min-h-screen bg-slate-50 md:h-screen md:overflow-hidden">
       <NavigationBar />
-      <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 sm:p-6 pt-20 md:p-8 md:pt-8">
-        <header className="mb-2 sm:mb-6 rounded-lg sm:rounded-2xl border border-sky-100 bg-linear-to-r from-sky-50 to-blue-50 px-3 sm:px-6 py-2 sm:py-5 shadow-sm">
+      <main className="flex min-h-screen flex-1 flex-col px-3 pb-24 pt-20 sm:px-5 sm:pt-24 md:h-screen md:min-h-0 md:overflow-hidden md:px-8 md:pb-8 md:pt-8">
+        <header className="mb-3 rounded-2xl border border-sky-100 bg-linear-to-br from-sky-50 via-blue-50 to-white px-4 py-4 shadow-sm sm:mb-6 sm:px-6 sm:py-5">
           <div className="flex flex-col gap-1 sm:gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-xl sm:text-2xl font-semibold text-slate-800">Students</h2>
-              <p className="hidden sm:block mt-1 text-sm text-slate-500">Manage records</p>
+              <h2 className="text-2xl font-semibold tracking-tight text-slate-800 sm:text-3xl">Students</h2>
+              <p className="mt-1 text-sm text-slate-500">Manage student records across all classes</p>
             </div>
-            <div className="rounded-full bg-white/80 px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium text-sky-700 shadow-sm">
-              {student.length}
+            <div className="rounded-full bg-white/85 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-sky-700 shadow-sm sm:px-4 sm:text-sm">
+              {student.length} records
             </div>
           </div>
         </header>
 
-        <section className="rounded-lg sm:rounded-2xl border border-slate-200 bg-white p-3 sm:p-4 shadow-sm">
+        <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
           <div className="flex flex-col gap-3 sm:gap-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs sm:text-xl font-semibold text-slate-700">Filters</p>
+                <p className="text-base font-semibold text-slate-700 sm:text-xl">Filters</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[180px_160px_220px_auto] items-end gap-2.5 sm:gap-3">
+            <div className="grid grid-cols-1 items-end gap-2.5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-[170px_150px_170px_minmax(220px,1fr)_auto]">
               <label className="flex flex-col gap-1">
                 <span className="text-[11px] sm:text-xs font-medium text-slate-600">Year</span>
                 <select
                   value={year}
                   onChange={(e) => setYear(e.target.value)}
                   disabled={isLoadingYears}
-                  className="h-8 sm:h-9 w-full lg:w-45 rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-sm lg:text-base text-slate-700 shadow-sm transition focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 shadow-sm transition focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 sm:h-10"
                 >
                   <option value="">All years</option>
                   { academicYear.length > 0 && academicYear.map((item, idx) => (
@@ -144,7 +146,7 @@ function Students() {
                 <select
                   value={studentClass}
                   onChange={(e) => setStudentClass(e.target.value)}
-                  className="h-8 sm:h-9 w-full lg:w-40 rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-sm lg:text-base text-slate-700 shadow-sm transition focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 shadow-sm transition focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 sm:h-10"
                 >
                   <option value="">All classes</option>
                   <option value="7th">7th</option>
@@ -157,46 +159,60 @@ function Students() {
               </label>
 
               <label className="flex flex-col gap-1">
+                <span className="text-[11px] sm:text-xs font-medium text-slate-600">Fee Status</span>
+                <select
+                  value={feeStatus}
+                  onChange={(e) => setFeeStatus(e.target.value)}
+                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 shadow-sm transition focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                >
+                  <option value="">Due/Cleared</option>
+                  <option value="due">Due</option>
+                  <option value="cleared">Cleared</option>
+                </select>
+              </label>
+
+              <label className="flex flex-col gap-1">
                 <span className="text-[11px] sm:text-xs font-medium text-slate-600">Student Name</span>
                 <input
                   type='text'
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder='Search name'
-                  className="h-8 sm:h-9 w-full lg:w-55 rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-sm lg:text-base text-slate-700 shadow-sm transition focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 shadow-sm transition focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 sm:h-10"
                 />
               </label>
 
-              <div className="sm:col-span-2 lg:col-span-1 flex justify-end">
+              <div className="flex justify-stretch sm:col-span-2 sm:justify-end lg:col-span-1">
                 <button
                 onClick={() => navigate("/students/create", {replace:true})}
-                  className="h-8 sm:h-9 rounded-lg border border-emerald-300 bg-emerald-600 px-3 sm:px-4 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+                  className="h-9 w-full rounded-lg border border-emerald-300 bg-emerald-600 px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700 sm:h-10 sm:w-auto sm:px-4 sm:text-sm"
                 >
-                  + New
+                  + New Student
                 </button>
               </div>
             </div>
           </div>
           {year && !isCurrentYearSelected && (
-            <div className="mt-1 sm:mt-3 rounded-lg sm:rounded-xl border border-blue-100 bg-blue-50 px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm text-blue-800">
+            <div className="mt-2 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-800 sm:mt-3 sm:px-4 sm:text-sm">
               <span className="font-semibold">{year}</span>
             </div>
           )}
         </section>
 
-        <section className="mt-3 sm:mt-5 rounded-lg sm:rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <section className="mt-3 flex-1 min-h-0 rounded-2xl border border-slate-200 bg-white shadow-sm sm:mt-5">
 
           {/* Desktop Table View */}
-          <div className="hidden md:block max-h-[56vh] overflow-auto">
+          <div className="hidden md:block h-full min-h-0 overflow-auto">
             <table className="min-w-full table-auto">
               <thead className="bg-slate-50 sticky top-0">
                 <tr>
                   <th className="w-12 px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">S.No</th>
                   <th className="px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Name</th>
-                  <th className="w-16 px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Class</th>
+                  <th className="px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Class</th>
                   <th className="px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Parent</th>
+                  <th className="px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Fee Status</th>
                   <th className="px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Year</th>
-                  <th className="w-32 px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Actions</th>
+                  <th className="w-44 px-3 py-3 text-center text-sm lg:text-base font-semibold text-slate-600">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -206,17 +222,28 @@ function Students() {
                     <td className="px-3 py-2.5 text-center text-sm lg:text-base text-slate-900 align-middle">{item.full_name}</td>
                     <td className="px-3 py-2.5 text-center text-sm lg:text-base text-slate-700 align-middle">{item.class}</td>
                     <td className="px-3 py-2.5 text-center text-sm lg:text-base text-slate-700 align-middle">{item.parent_name ? item.parent_name : '-'}</td>
+                    <td className="px-3 py-2.5 text-center align-middle">
+                      {Number(item.due_amount ?? 0) > 0 ? (
+                        <span className="inline-flex rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
+                          Due INR {Number(item.due_amount).toLocaleString('en-IN')}
+                        </span>
+                      ) : (
+                        <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                          Cleared
+                        </span>
+                      )}
+                    </td>
                     <td className="px-3 py-2.5 text-center text-sm lg:text-base text-slate-700 align-middle">{item.year_name}</td>
                     <td className="px-3 py-3">
-                      <div className="flex flex-wrap items-center justify-center gap-1">
-                        <button type="button" onClick={() => navigate(`/students/${item.studentId}`)} className="inline-flex items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700 transition hover:bg-blue-100">
+                      <div className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50/80 p-1">
+                        <button type="button" onClick={() => navigate(`/students/${item.studentId}`)} className="inline-flex items-center justify-center rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100">
                           View
                         </button>
-                        <button type="button" onClick={() => navigate(`/students/${item.studentId}/edit`)} className="inline-flex items-center justify-center rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 transition hover:bg-amber-100">
+                        <button type="button" onClick={() => navigate(`/students/${item.studentId}/edit`)} className="inline-flex items-center justify-center rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-100">
                           Edit
                         </button>
-                        <button type="button" onClick={() => handleDeleteStudent(item.studentId, item.full_name)} disabled={isDeletingStudent === item.studentId} className="inline-flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 px-2 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-60">
-                          Del
+                        <button type="button" onClick={() => handleDeleteStudent(item.studentId, item.full_name)} disabled={isDeletingStudent === item.studentId} className="inline-flex items-center justify-center rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-60">
+                          {isDeletingStudent === item.studentId ? 'Deleting' : 'Delete'}
                         </button>
                       </div>
                     </td>
@@ -227,8 +254,8 @@ function Students() {
           </div>
 
           {/* Mobile Card View */}
-          <div className="md:hidden max-h-[56vh] overflow-y-auto">
-            <div className="space-y-3 p-4">
+          <div className="max-h-[62vh] overflow-y-auto md:hidden">
+            <div className="space-y-3 p-3 sm:p-4">
               {isLoadingStudents && (
                 <div className="flex items-center justify-center py-8 text-slate-500">
                   <span className="app-spinner mr-2" />
@@ -243,23 +270,28 @@ function Students() {
               )}
 
               {student.length > 0 && student.map((item, idx) => (
-                <div key={item.studentId ?? idx} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+                <div key={item.studentId ?? idx} className="space-y-2 rounded-xl border border-slate-200 bg-white p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-slate-500">#{idx + 1}</p>
                       <p className="text-sm font-semibold text-slate-800 truncate">{item.full_name}</p>
                       <p className="text-xs text-slate-600">{item.class} • {item.year_name}</p>
                       <p className="text-xs text-slate-600">Parent: {item.parent_name || '-'}</p>
+                      {Number(item.due_amount ?? 0) > 0 ? (
+                        <p className="mt-1 text-xs font-semibold text-rose-700">Due INR {Number(item.due_amount).toLocaleString('en-IN')}</p>
+                      ) : (
+                        <p className="mt-1 text-xs font-semibold text-emerald-700">Cleared</p>
+                      )}
                     </div>
                   </div>
-                  <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
-                    <button type="button" onClick={() => navigate(`/students/${item.studentId}`)} className="flex-1 rounded-md border border-blue-200 bg-blue-50 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100">
+                  <div className="flex items-center gap-1.5 border-t border-slate-100 pt-2">
+                    <button type="button" onClick={() => navigate(`/students/${item.studentId}`)} className="flex-1 rounded-md border border-blue-200 bg-blue-50 py-1 text-[11px] font-semibold text-blue-700 transition hover:bg-blue-100 sm:py-1.5 sm:text-xs">
                       View
                     </button>
-                    <button type="button" onClick={() => navigate(`/students/${item.studentId}/edit`)} className="flex-1 rounded-md border border-amber-200 bg-amber-50 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-100">
+                    <button type="button" onClick={() => navigate(`/students/${item.studentId}/edit`)} className="flex-1 rounded-md border border-amber-200 bg-amber-50 py-1 text-[11px] font-semibold text-amber-700 transition hover:bg-amber-100 sm:py-1.5 sm:text-xs">
                       Edit
                     </button>
-                    <button type="button" onClick={() => handleDeleteStudent(item.studentId, item.full_name)} disabled={isDeletingStudent === item.studentId} className="flex-1 rounded-md border border-rose-200 bg-rose-50 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-60">
+                    <button type="button" onClick={() => handleDeleteStudent(item.studentId, item.full_name)} disabled={isDeletingStudent === item.studentId} className="flex-1 rounded-md border border-rose-200 bg-rose-50 py-1 text-[11px] font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-60 sm:py-1.5 sm:text-xs">
                       {isDeletingStudent === item.studentId ? '...' : 'Delete'}
                     </button>
                   </div>

@@ -136,7 +136,7 @@ const getReceiptById = asyncHandler(async (req, res) => {
 
 // Get receipt by filter like year and receiptNo and class
 const getReceipts = asyncHandler(async (req, res) => {
-    const { year, receiptNo, class:studentClass } = req.query;
+    const { year, receiptNo, class:studentClass, paymentMode, paymentDate, fromDate, toDate } = req.query;
 
     // Fetch active year from DB if year is not provided
     let activeYear = year;
@@ -183,6 +183,31 @@ const getReceipts = asyncHandler(async (req, res) => {
     if (receiptNo) {
         query += " AND r.receipt_number LIKE ?";
         params.push(`%${String(receiptNo).trim()}%`);
+    }
+
+    if (paymentMode) {
+        query += " AND r.payment_mode = ?";
+        params.push(String(paymentMode).trim().toUpperCase());
+    }
+
+    const normalizedPaymentDate = String(paymentDate ?? '').trim();
+    const normalizedFromDate = String(fromDate ?? '').trim();
+    const normalizedToDate = String(toDate ?? '').trim();
+
+    // Specific date takes precedence over range filters.
+    if (normalizedPaymentDate) {
+        query += " AND r.payment_date = ?";
+        params.push(normalizedPaymentDate);
+    } else {
+        if (normalizedFromDate) {
+            query += " AND r.payment_date >= ?";
+            params.push(normalizedFromDate);
+        }
+
+        if (normalizedToDate) {
+            query += " AND r.payment_date <= ?";
+            params.push(normalizedToDate);
+        }
     }
 
     query += " ORDER BY r.payment_date DESC";

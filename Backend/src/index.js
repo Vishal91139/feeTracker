@@ -11,7 +11,7 @@ const startServer = asyncHandler(async(req, res) => {
     try {
         await connectDB()
 
-        const server = app.listen(process.env.PORT, () => {
+        const server = app.listen(process.env.PORT,"0.0.0.0", () => {
             console.log(`🚀 Server running on port ${process.env.PORT}`);
         });
 

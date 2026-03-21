@@ -52,7 +52,7 @@ const createStudent = asyncHandler(async(req, res) => {
 
 // get all students of a class in a particular year also get student by name (filters)
 const getStudents = asyncHandler(async(req, res) => {
-    const { class:studentClass, year, name } = req.query;
+    const { class:studentClass, year, name, feeStatus } = req.query;
     
     // Fetch active year from DB if year is not provided
     let activeYear = year;
@@ -79,6 +79,15 @@ const getStudents = asyncHandler(async(req, res) => {
     if(name) {
         query += " AND s.full_name LIKE ?"
         params.push(`%${name}%`)
+    }
+
+    const normalizedFeeStatus = String(feeStatus ?? "").trim().toLowerCase();
+    if (normalizedFeeStatus === "due") {
+        query += " AND sa.due_amount > 0";
+    }
+
+    if (normalizedFeeStatus === "cleared" || normalizedFeeStatus === "paid") {
+        query += " AND sa.due_amount <= 0";
     }
 
     const [students] = await pool.query(query, params)

@@ -191,32 +191,32 @@ function StudentDetail() {
   }
 
   return (
-    <div className="app-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="app-modal-panel w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl">
-        <div className="flex items-start justify-between border-b border-slate-200 bg-linear-to-r from-sky-50 to-blue-50 px-8 py-6">
+    <div className="app-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="app-modal-panel w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl sm:rounded-3xl">
+        <div className="flex flex-col gap-3 border-b border-slate-200 bg-linear-to-br from-sky-50 via-blue-50 to-white px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-8 sm:py-6">
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">Student Details</h2>
-            <p className="mt-1 text-sm text-slate-500">View the complete profile and payment summary.</p>
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Student Details</h2>
+            <p className="mt-1 text-sm text-slate-500">View profile, year-wise details, and receipts.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               type="button"
               onClick={() => navigate(`/students/${studentId}/edit`)}
-              className="rounded-xl bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-800 transition hover:bg-amber-200"
+              className="rounded-xl bg-amber-100 px-3 py-2 text-xs font-semibold text-amber-800 transition hover:bg-amber-200 sm:px-4 sm:text-sm"
             >
               Edit
             </button>
             <button
               type="button"
               onClick={handleClose}
-              className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:bg-slate-100"
+              className="rounded-xl bg-white px-3 py-2 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-100 sm:px-4 sm:text-sm"
             >
               Close
             </button>
           </div>
         </div>
 
-        <div className="max-h-[85vh] overflow-y-auto bg-slate-50 px-8 py-8">
+        <div className="max-h-[88vh] overflow-y-auto bg-slate-50 px-3 py-4 sm:px-8 sm:py-8">
           {isInitialLoading && !student && (
             <div className="inline-flex items-center gap-2 text-sm text-slate-500">
               <span className="app-spinner" aria-hidden="true" />
@@ -228,18 +228,18 @@ function StudentDetail() {
 
           {student && (
             <>
-              <div className="app-fade-in mb-6 rounded-2xl bg-white p-5 shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="app-fade-in mb-4 rounded-2xl bg-white p-4 shadow-sm sm:mb-6 sm:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">Profile Controls</h3>
                     <p className="mt-1 text-sm text-slate-500">Choose academic year to view profile and receipts.</p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
                     <select
                       value={selectedHistoryYearId}
                       onChange={(event) => setSelectedHistoryYearId(event.target.value)}
                       disabled={isRefreshingYearData}
-                      className="min-w-48 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 shadow-sm transition focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                      className="h-11 min-w-48 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm transition focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
                     >
                       {academicHistory.length === 0 && <option value="">No academic history</option>}
                       {academicHistory.map((item) => (
@@ -252,7 +252,7 @@ function StudentDetail() {
                       type="button"
                       onClick={handleDelete}
                       disabled={isDeleting || isRefreshingYearData}
-                      className="rounded-xl bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="h-11 rounded-xl bg-rose-50 px-4 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {isDeleting ? 'Deleting...' : 'Delete Student'}
                     </button>
@@ -266,46 +266,46 @@ function StudentDetail() {
                 )}
               </div>
 
-              <div className="app-fade-in grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-2xl bg-white p-5 shadow-sm">
+              <div className="app-fade-in grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
                   <p className="text-xs uppercase tracking-wide text-slate-400">Student Name</p>
                   <p className="mt-2 text-lg font-semibold text-slate-900">{student.full_name}</p>
                 </div>
-                <div className="rounded-2xl bg-white p-5 shadow-sm">
+                <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
                   <p className="text-xs uppercase tracking-wide text-slate-400">Parent Name</p>
                   <p className="mt-2 text-lg font-semibold text-slate-900">{student.parent_name ?? '-'}</p>
                 </div>
-                <div className="rounded-2xl bg-white p-5 shadow-sm">
+                <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
                   <p className="text-xs uppercase tracking-wide text-slate-400">Class</p>
                   <p className="mt-2 text-lg font-semibold text-slate-900">{student.class ?? '-'}</p>
                 </div>
-                <div className="rounded-2xl bg-white p-5 shadow-sm">
+                <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
                   <p className="text-xs uppercase tracking-wide text-slate-400">Academic Year</p>
                   <p className="mt-2 text-lg font-semibold text-slate-900">{student.year_name ?? '-'}</p>
                 </div>
               </div>
 
-              <div className="app-fade-in mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-2xl bg-white p-5 shadow-sm">
+              <div className="app-fade-in mt-4 grid gap-3 sm:mt-6 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
                   <p className="text-xs uppercase tracking-wide text-slate-400">Email</p>
                   <p className="mt-2 text-sm font-medium text-slate-900 break-all">{student.email ?? '-'}</p>
                 </div>
-                <div className="rounded-2xl bg-white p-5 shadow-sm">
+                <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
                   <p className="text-xs uppercase tracking-wide text-slate-400">Mobile</p>
                   <p className="mt-2 text-sm font-medium text-slate-900">{student.mobile ?? '-'}</p>
                 </div>
-                <div className="rounded-2xl bg-white p-5 shadow-sm">
+                <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
                   <p className="text-xs uppercase tracking-wide text-slate-400">Total Fee</p>
                   <p className="mt-2 text-sm font-semibold text-slate-900">INR {student.total_fee ?? 0}</p>
                 </div>
-                <div className="rounded-2xl bg-white p-5 shadow-sm">
+                <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
                   <p className="text-xs uppercase tracking-wide text-slate-400">Paid / Due</p>
                   <p className="mt-2 text-sm font-semibold text-emerald-600">INR {student.paid_amount ?? 0}</p>
                   <p className="mt-1 text-sm font-semibold text-rose-600">Due INR {student.due_amount ?? 0}</p>
                 </div>
               </div>
 
-              <div className="app-fade-in mt-6 rounded-2xl bg-white p-6 shadow-sm">
+              <div className="app-fade-in mt-4 rounded-2xl bg-white p-4 shadow-sm sm:mt-6 sm:p-6">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">Receipt History</h3>

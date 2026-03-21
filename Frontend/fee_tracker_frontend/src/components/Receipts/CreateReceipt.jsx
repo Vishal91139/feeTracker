@@ -241,10 +241,10 @@ function CreateReceipt() {
     <div className="app-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
       <div className="w-full max-w-5xl">
           <div className="app-modal-panel flex max-h-[95vh] sm:max-h-[88vh] flex-col overflow-hidden rounded-2xl sm:rounded-3xl bg-white shadow-2xl">
-            <div className="shrink-0 flex flex-col gap-1 sm:gap-3 sm:flex-row sm:items-start sm:justify-between border-b border-slate-200 bg-linear-to-r from-emerald-50 to-cyan-50 p-2 sm:p-6">
+            <div className="shrink-0 flex flex-col gap-2 border-b border-slate-200 bg-linear-to-br from-emerald-50 via-cyan-50 to-white px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6 sm:py-6">
               <div>
-                <h1 className="text-lg sm:text-3xl font-semibold text-slate-900">Create Receipt</h1>
-              <p className="hidden sm:block mt-1 sm:mt-2 text-xs sm:text-sm text-slate-600">
+                <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Create Receipt</h1>
+              <p className="mt-1 text-sm text-slate-600">
                 Fill the payment details and verify the preview before saving.
               </p>
               </div>
@@ -256,15 +256,15 @@ function CreateReceipt() {
 
             <div className="min-h-0 flex-1 overflow-y-auto">
 
-            <form onSubmit={handleSubmit} className="p-2 sm:p-4 md:p-6">
-              <div className="grid grid-cols-1 gap-2 sm:gap-3 md:grid-cols-2">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                 <label className="flex flex-col gap-1 sm:gap-2">
                   <span className="text-xs sm:text-sm font-medium text-slate-700">Academic Year<span className="text-rose-500">*</span></span>
                   <select
                     name="academicYearId"
                     value={formData.academicYearId}
                     onChange={handleInputChange}
-                    className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                    className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
                   >
                     <option value="">Select academic year</option>
                     {isYearLoading && <option value="" disabled>Loading...</option>}
@@ -284,7 +284,7 @@ function CreateReceipt() {
                     name="studentClass"
                     value={formData.studentClass}
                     onChange={handleInputChange}
-                    className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                    className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
                   >
                     <option value="">Select class</option>
                     {classOptions.map((item) => (
@@ -325,7 +325,7 @@ function CreateReceipt() {
                       }}
                       disabled={!formData.studentClass || !formData.academicYearId || isStudentLoading}
                       placeholder={isStudentLoading ? 'Loading students...' : 'Search and select student'}
-                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+                      className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-100"
                     />
 
                     {isStudentDropdownOpen && !isStudentLoading && matchingStudentChoices.length > 0 && (
@@ -369,7 +369,7 @@ function CreateReceipt() {
                     placeholder="Enter amount received"
                     value={formData.amount}
                     onChange={handleInputChange}
-                    className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                    className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
                   />
                   {errors.amount && <span className="text-xs font-medium text-rose-500">{errors.amount}</span>}
                 </label>
@@ -380,7 +380,7 @@ function CreateReceipt() {
                     name="paymentMode"
                     value={formData.paymentMode}
                     onChange={handleInputChange}
-                    className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                    className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
                   >
                     <option value="">Select mode</option>
                     {paymentModes.map((mode) => (
@@ -399,7 +399,7 @@ function CreateReceipt() {
                     name="paymentDate"
                     value={formData.paymentDate}
                     onChange={handleInputChange}
-                    className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                    className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
                   />
                   {errors.paymentDate && <span className="text-xs font-medium text-rose-500">{errors.paymentDate}</span>}
                 </label>
@@ -412,7 +412,7 @@ function CreateReceipt() {
                     onChange={handleInputChange}
                     rows={3}
                     placeholder="Notes about this payment"
-                    className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                    className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
                   />
                 </label>
               </div>
@@ -429,13 +429,13 @@ function CreateReceipt() {
                 </div>
               )}
 
-              <div className="mt-6 sm:mt-8 md:mt-10 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 sm:gap-4">
+              <div className="mt-8 flex flex-col-reverse items-center justify-between gap-3 sm:mt-10 sm:flex-row sm:gap-4">
                 <div className="text-xs text-slate-500">
                   Fields marked with * are required for the receipt payload expected by the backend.
                 </div>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto rounded-lg sm:rounded-xl bg-blue-600 px-4 py-2.5 sm:px-8 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className="h-11 w-full rounded-xl bg-blue-600 px-8 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-blue-200 sm:w-auto"
                 >
                   Draft Receipt
                 </button>

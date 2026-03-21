@@ -8,6 +8,7 @@ import ReceiptsDashboard from './components/Receipts/ReceiptsDashboard.jsx'
 import Students from './components/Students/Students.jsx'
 import AcademicYear from './components/Academic-year/AcademicYear.jsx'
 import CreateAcademicYear from './components/Academic-year/CreateAcademicYear.jsx'
+import PromoteStudents from './components/Academic-year/PromoteStudents.jsx'
 import CreateReceipt from './components/Receipts/CreateReceipt.jsx'
 import ViewReceipt from './components/Receipts/ViewReceipt.jsx'
 import CreateStudent from './components/Students/CreateStudent.jsx'
@@ -47,6 +48,10 @@ const router = createBrowserRouter([
                 element: <CreateAcademicYear />,
               },
             ],
+          },
+          {
+            path: "academic-year/promote-students",
+            element: <PromoteStudents />,
           },
           {
             path: "students",

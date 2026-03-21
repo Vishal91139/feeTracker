@@ -132,9 +132,54 @@ const setActiveYear = asyncHandler(async (req, res) => {
     }
 });
 
+const renameAcademicYear = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { year } = req.body;
+    const normalizedYear = String(year ?? "").trim();
+
+    if (!id) {
+        throw new ApiError(400, "Academic year id is required");
+    }
+
+    if (!normalizedYear) {
+        throw new ApiError(400, "Academic year name is required");
+    }
+
+    const [[existingYear]] = await pool.query(
+        "SELECT id FROM academic_years WHERE id = ? LIMIT 1",
+        [id]
+    );
+
+    if (!existingYear) {
+        throw new ApiError(404, "Academic year not found");
+    }
+
+    const [[duplicateYear]] = await pool.query(
+        `SELECT id FROM academic_years
+         WHERE LOWER(TRIM(year_name)) = LOWER(TRIM(?))
+           AND id != ?
+         LIMIT 1`,
+        [normalizedYear, id]
+    );
+
+    if (duplicateYear) {
+        throw new ApiError(409, "Academic year already exists");
+    }
+
+    await pool.query(
+        "UPDATE academic_years SET year_name = ? WHERE id = ?",
+        [normalizedYear, id]
+    );
+
+    return res.status(200).json(
+        new ApiResponse(200, null, "Academic year renamed successfully")
+    );
+});
+
 export { 
     addAcademicYear,
     getAllAcademicYears,
     deleteAcademicYearById,
-    setActiveYear    
+    setActiveYear,
+    renameAcademicYear
 };

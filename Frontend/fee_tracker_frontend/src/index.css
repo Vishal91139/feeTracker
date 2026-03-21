@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 :root {
-	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	font-family: 'Manrope', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 	color: #0f172a;
-	background: #f8fafc;
+	background: #f1f5f9;
 	color-scheme: light;
 }
 
@@ -11,7 +11,10 @@ body {
 	margin: 0;
 	min-width: 320px;
 	min-height: 100vh;
-	background: #f8fafc;
+	background:
+		radial-gradient(circle at 12% 2%, rgb(56 189 248 / 0.18), transparent 26%),
+		radial-gradient(circle at 100% 0%, rgb(14 165 233 / 0.16), transparent 24%),
+		linear-gradient(180deg, #f8fbff 0%, #f1f5f9 44%, #eef2ff 100%);
 }
 
 * {
@@ -44,6 +47,14 @@ button {
 
 #root {
 	min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4 {
+	font-family: 'Space Grotesk', 'Manrope', sans-serif;
+	letter-spacing: -0.02em;
 }
 
 .app-spinner {
@@ -147,10 +158,8 @@ button {
 		margin-top: 16px;
 	}
 
-	/* Better table handling - hide extra columns */
-	table th:nth-child(n+5),
-	table td:nth-child(n+5) {
-		display: none;
+	main {
+		overflow-x: clip;
 	}
 }
 
@@ -188,10 +197,18 @@ button {
 
 /* Print styles */
 @media print {
-	.app-modal-backdrop,
 	button:not(.print),
 	.no-print {
 		display: none !important;
+	}
+
+	.app-modal-backdrop {
+		display: block !important;
+		position: static !important;
+		inset: auto !important;
+		background: transparent !important;
+		backdrop-filter: none !important;
+		padding: 0 !important;
 	}
 
 	body {
@@ -201,5 +218,8 @@ button {
 	.app-modal-panel {
 		box-shadow: none;
 		border: none;
+		max-height: none !important;
+		overflow: visible !important;
+		width: 100% !important;
 	}
 }
